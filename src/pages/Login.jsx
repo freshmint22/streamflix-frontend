@@ -21,6 +21,7 @@ export default function Login() {
         <button type="submit" style={styles.btn}>Entrar</button>
       </form>
       <p>¿No tienes cuenta? <Link to="/register">Regístrate</Link></p>
+      <p style={{marginTop:8}}><a href="/forgot">¿Olvidaste tu contraseña?</a></p>
     </div>
   );
 }

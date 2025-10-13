@@ -1,20 +1,24 @@
-import MovieCard from "../components/MovieCard";
-
-const DUMMY = [
-  { id:1, title:"Inception", year:2010, poster:"https://image.tmdb.org/t/p/w500/qmDpIHrmpJINaRKAfWQfftjCdyi.jpg" },
-  { id:2, title:"Interstellar", year:2014, poster:"https://image.tmdb.org/t/p/w500/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg" },
-  { id:3, title:"The Dark Knight", year:2008, poster:"https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg" }
-];
-
 export default function Home() {
   return (
-    <div>
-      <h1>Catálogo</h1>
-      <div style={grid}>
-        {DUMMY.map(m => <MovieCard key={m.id} {...m} />)}
+    <div style={styles.wrap}>
+      <h1 style={{margin:0}}>Bienvenido a StreamFlix</h1>
+      <p style={{color:"#666", marginTop:8}}>
+        En el Sprint 2 verás aquí el catálogo de películas.
+      </p>
+
+      <div style={styles.panel}>
+        <h3 style={{margin:"0 0 8px"}}>¿Qué viene?</h3>
+        <ul style={{margin:0, paddingLeft:18, lineHeight:1.7}}>
+          <li>Listado de películas por género</li>
+          <li>Buscador y filtros</li>
+          <li>Reproducción, pausa y stop</li>
+        </ul>
       </div>
     </div>
   );
 }
 
-const grid = {display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(220px,1fr))", gap:16, marginTop:16};
+const styles = {
+  wrap:{maxWidth:1000, margin:"10px auto"},
+  panel:{marginTop:18, padding:16, border:"1px solid #eee", borderRadius:12, background:"#fafafa"}
+};
