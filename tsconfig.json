@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowJs": false,               
+    "checkJs": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,               
+    "baseUrl": "src",
+    "forceConsistentCasingInFileNames": true,
+    "types": ["vite/client"]       // 👈 para tipos de import.meta.env
+  },
+  "include": ["src"]
+}
