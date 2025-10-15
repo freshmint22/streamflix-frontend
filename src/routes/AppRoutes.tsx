@@ -1,14 +1,14 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Landing from "../pages/Landing";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import ForgotPassword from "../pages/ForgotPassword";
 import Home from "../pages/Home";
 import Profile from "../pages/Profile";
-import ProtectedRoute from "./ProtectedRoute"; // 👈 Importa el nuevo archivo
+import ProtectedRoute from "./ProtectedRoute";
 import Navbar from "../components/Navbar";
 
-function LayoutWithNav({ children }) {
+function LayoutWithNav({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navbar />
@@ -21,36 +21,34 @@ function LayoutWithNav({ children }) {
 
 export default function AppRoutes() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Públicas */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot" element={<ForgotPassword />} />
+    <Routes>
+      {/* Públicas */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot" element={<ForgotPassword />} />
 
-        {/* Privadas */}
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <LayoutWithNav>
-                <Home />
-              </LayoutWithNav>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <LayoutWithNav>
-                <Profile />
-              </LayoutWithNav>
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+      {/* Privadas */}
+      <Route
+        path="/home"
+        element={
+          <ProtectedRoute>
+            <LayoutWithNav>
+              <Home />
+            </LayoutWithNav>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <LayoutWithNav>
+              <Profile />
+            </LayoutWithNav>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
