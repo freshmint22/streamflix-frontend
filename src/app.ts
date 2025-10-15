@@ -1,6 +1,7 @@
 
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import path from 'path';
 
 const app = express();
 
@@ -11,6 +12,9 @@ const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
 
 app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json());
+
+// Servir archivos estáticos desde carpeta `public`
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Ruta de prueba
 app.get("/health", (_req: Request, res: Response) => {
