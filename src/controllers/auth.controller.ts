@@ -43,5 +43,33 @@ export async function register(req: Request, res: Response) {
   }
 }
 
-export default { register };
-//“Controllers para Sprint 2”
+// single default export at bottom
+export async function login(req: Request, res: Response) {
+  try {
+    const { email, password } = (req.body || {}) as { email?: string; password?: string };
+    if (!email || !password) return res.status(400).json({ error: 'Missing credentials' });
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() }).exec();
+    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+    const isValid = await (user as any).comparePassword(password);
+    if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
+
+    const token = jwt.sign({ sub: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+
+    const userSafe = {
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+      avatar: user.avatar,
+      createdAt: user.createdAt
+    };
+
+    return res.json({ token, user: userSafe });
+  } catch (err: any) {
+    console.error('Login error:', err?.message || err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+export default { register, login };
