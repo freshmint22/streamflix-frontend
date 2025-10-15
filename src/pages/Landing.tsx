@@ -75,12 +75,15 @@ export default function Landing() {
   );
 }
 
-function CategoryCard({ name, images }) {
+// arriba del archivo
+type Category = { name: string; images: string[] };
+
+function CategoryCard({ name, images }: Category) {
   return (
     <article className="cat-card">
       <div className="cat-posters">
-        {images.slice(0,3).map((src,i) => (
-          <img key={i} src={src} alt={name} />
+        {images.slice(0, 3).map((src, i) => (
+          <img key={i} src={src} alt={name} loading="lazy" />
         ))}
       </div>
       <div className="cat-row">
@@ -91,8 +94,7 @@ function CategoryCard({ name, images }) {
   );
 }
 
-const CATEGORIES = [
-  {
+const CATEGORIES: Category[] = [{
     name: "Action",
     images: [
       "https://image.tmdb.org/t/p/w185/ceG9VZOq2zImlt0m7p7G3myCRHn.jpg",
@@ -131,5 +133,4 @@ const CATEGORIES = [
       "https://image.tmdb.org/t/p/w185/eqfdZCv2xYvPQU4Z1nJQDaU29Qa.jpg",
       "https://image.tmdb.org/t/p/w185/4q2hz2m8hubgvijz8Ez0T2Os2Yv.jpg",
     ],
-  },
-];
+  },];
