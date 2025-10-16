@@ -1,6 +1,8 @@
 
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import path from 'path';
+import authRouter from './routes/auth.routes';
 
 const app = express();
 
@@ -11,6 +13,9 @@ const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
 
 app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json());
+
+// Servir archivos estáticos desde carpeta `public`
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Ruta de prueba
 app.get("/health", (_req: Request, res: Response) => {
@@ -25,49 +30,8 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
   return res.status(401).json({ error: "Unauthorized (mock)" });
 }
 
-// --- Auth: Register (MOCK) ---
-app.post("/auth/register", (req: Request, res: Response) => {
-  const { firstName, lastName, age, email, password } = (req.body || {}) as {
-    firstName?: string;
-    lastName?: string;
-    age?: number;
-    email?: string;
-    password?: string;
-  };
-  if (!firstName || !email || !password) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-  // En real: crear usuario en DB y devolver JWT
-  return res.status(201).json({
-    token: "devtoken",
-    user: {
-      _id: "u_mock",
-      firstName,
-      lastName: lastName || "",
-      age: Number.isFinite(age) ? age : 18,
-      email,
-    },
-  });
-});
-
-// --- Auth: Login (MOCK) ---
-app.post("/auth/login", (req: Request, res: Response) => {
-  const { email, password } = (req.body || {}) as { email?: string; password?: string };
-  if (!email || !password) return res.status(400).json({ error: "Missing credentials" });
-  // En real: validar contra DB y devolver JWT
-  return res.json({
-    token: "devtoken",
-    user: { _id: "u_mock", firstName: "User", lastName: "Mock", age: 20, email },
-  });
-});
-
-// --- Auth: Forgot Password (MOCK) ---
-app.post("/auth/forgot-password", (req: Request, res: Response) => {
-  const { email } = (req.body || {}) as { email?: string };
-  if (!email) return res.status(400).json({ error: "Email required" });
-  // En real: enviar email con token
-  return res.json({ message: "Recovery email sent (mock)" });
-});
+// --- Auth routes (real implementation) ---
+app.use('/auth', authRouter);
 
 // --- Users: Get profile (MOCK, protegido) ---
 app.get("/users/me", requireAuth, (_req: Request, res: Response) => {
