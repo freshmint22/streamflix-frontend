@@ -1,6 +1,7 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 import app from "./app";
+import passwordRoutes from "./routes/passwordRoutes.js";
 
 const PORT = process.env.PORT || "5000";
 const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
@@ -21,6 +22,10 @@ async function start() {
     console.error("❌ Error al iniciar el servidor:", err?.message || err);
     process.exit(1);
   }
+
+  app.use("/auth", passwordRoutes);
+
+  
 }
 
 start();

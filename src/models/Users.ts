@@ -27,8 +27,8 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  resetPasswordToken: String,
-  resetPasswordExpires: Date
+  resetPasswordToken: String, // Token temporal para restablecer contraseña
+  resetPasswordExpires: Date  // Fecha de expiración del token
 }, {
   timestamps: true
 });
