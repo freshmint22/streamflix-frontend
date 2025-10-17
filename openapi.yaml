@@ -1,0 +1,536 @@
+openapi: 3.0.3
+info:
+  title: StreamFlix Backend API
+  description: OpenAPI spec for StreamFlix backend (Sprint 1). This file is the contract the Vite/React frontend will use with fetch.
+  version: "1.0.0"
+servers:
+  - url: https://api.example.com
+    description: Production server (replace with Render service URL)
+  - url: http://localhost:3000
+    description: Local development
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+      responses:
+        '201':
+          description: Created — returns token and user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: OK — returns token and user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /auth/logout:
+    post:
+      summary: Logout (invalidate JWT)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+  /auth/forgot:
+    post:
+      summary: Start password recovery — sends reset email with token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Email sent (even if email not found, to avoid user enumeration)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+  /auth/reset:
+    post:
+      summary: Reset password using token from email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /users/me:
+    get:
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+    put:
+      summary: Update current user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    delete:
+      summary: Delete current user account
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Account deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+  /api/movies:
+    get:
+      summary: List movies (supports paging, search, sorting)
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/q'
+        - $ref: '#/components/parameters/sortBy'
+        - $ref: '#/components/parameters/order'
+      responses:
+        '200':
+          description: Paginated list of movies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                    example: 1
+                  limit:
+                    type: integer
+                    example: 10
+                  total:
+                    type: integer
+                    example: 123
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Movie'
+    post:
+      summary: Create a movie (admin only)
+      security:
+        - bearerAuth: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieCreate'
+      responses:
+        '201':
+          description: Movie created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+  /api/movies/{movieId}:
+    get:
+      summary: Get a movie by ID
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Movie found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Update a movie (admin only)
+      security:
+        - bearerAuth: [admin]
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieCreate'
+      responses:
+        '200':
+          description: Movie updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+    delete:
+      summary: Delete a movie (admin only)
+      security:
+        - bearerAuth: [admin]
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Movie deleted (no content)
+  /playback/start:
+    post:
+      summary: Start/resume playback for a movie (records position)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                movieId:
+                  type: string
+                position:
+                  type: number
+                  description: Seconds into the movie
+      responses:
+        '200':
+          description: Playback recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaybackState'
+  /playback/pause:
+    post:
+      summary: Pause playback and record position
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                movieId:
+                  type: string
+                position:
+                  type: number
+      responses:
+        '200':
+          description: Playback paused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaybackState'
+  /playback/stop:
+    post:
+      summary: Stop playback and record final position
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                movieId:
+                  type: string
+                position:
+                  type: number
+      responses:
+        '200':
+          description: Playback stopped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaybackState'
+  /playback/{userId}:
+    get:
+      summary: Get latest playback states for a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Array of playback states
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlaybackState'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    UserRegister:
+      type: object
+      required: [firstName, lastName, age, email, password]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        age:
+          type: integer
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+    UserLogin:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    UserUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        age:
+          type: integer
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    UserPublic:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        age:
+          type: integer
+        email:
+          type: string
+        role:
+          type: string
+          example: user
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserPublic'
+    Movie:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        year:
+          type: integer
+        duration:
+          type: integer
+          description: duration in seconds
+        genres:
+          type: array
+          items:
+            type: string
+        posterUrl:
+          type: string
+        posterAlt:
+          type: string
+          description: Alternative text for the poster (for accessibility)
+    MovieCreate:
+      type: object
+      required: [title, description]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        year:
+          type: integer
+        duration:
+          type: integer
+        genres:
+          type: array
+          items:
+            type: string
+        posterUrl:
+          type: string
+        posterAlt:
+          type: string
+    PlaybackState:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        movieId:
+          type: string
+        position:
+          type: number
+        state:
+          type: string
+          enum: [playing, paused, stopped]
+        updatedAt:
+          type: string
+          format: date-time
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+  parameters:
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+      description: Page number
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 10
+      description: Page size (max 100)
+    q:
+      name: q
+      in: query
+      schema:
+        type: string
+      description: Full-text search query
+    sortBy:
+      name: sortBy
+      in: query
+      schema:
+        type: string
+        default: createdAt
+    order:
+      name: order
+      in: query
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: desc
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+security:
+  - bearerAuth: []

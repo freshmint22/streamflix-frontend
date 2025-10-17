@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+/**
+ * Movie schema stores metadata used by the catalog and player.
+ */
 const movieSchema = new mongoose.Schema({
   title: {
     type: String,

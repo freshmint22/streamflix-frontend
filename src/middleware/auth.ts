@@ -1,12 +1,49 @@
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { isTokenBlacklisted } from '../lib/tokenBlacklist';
+import User from '../models/Users';
 
-interface AuthenticatedRequest extends Request {
-  user?: { id?: string | number } | any;
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
+
+/**
+ * Middleware: requireAuth
+ * Verifies a Bearer JWT from the Authorization header and attaches the
+ * authenticated user's id to `req.userId`.
+ *
+ * Returns 401 for missing/invalid or revoked tokens.
+ */
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+	const auth = req.headers.authorization || '';
+	const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+	if (!token) return res.status(401).json({ error: 'Unauthorized' });
+	if (isTokenBlacklisted(token)) return res.status(401).json({ error: 'Token revoked' });
+	try {
+		const payload = jwt.verify(token, JWT_SECRET) as any;
+		(req as any).userId = payload?.sub || payload?.id;
+		return next();
+	} catch (err) {
+		return res.status(401).json({ error: 'Unauthorized' });
+	}
 }
 
-export default function auth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  if (!req.user || String(req.user.id) !== String(req.params.id)) {
-    return res.status(403).json({ message: 'Not authorized to modify this account' });
-  }
-  next();
+export default requireAuth;
+
+/**
+ * Middleware: requireAdmin
+ * Ensures the authenticated user exists and has role === 'admin'.
+ * Returns 401 if the user is missing; 403 if not admin.
+ */
+
+export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+	try {
+		const userId = (req as any).userId as string | undefined;
+		if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+		const user = await User.findById(userId).exec();
+		if (!user) return res.status(401).json({ error: 'Unauthorized' });
+		if ((user as any).role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+		return next();
+	} catch (err) {
+		return res.status(500).json({ error: 'Internal server error' });
+	}
 }
+
