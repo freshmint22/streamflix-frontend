@@ -2,6 +2,10 @@ import mongoose, { Document, CallbackError } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 // 1️⃣ Definir una interfaz para el usuario
+import mongoose, { Document, Model } from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+// Interface para los métodos de instancia
 export interface IUser extends Document {
   email: string;
   password: string;
@@ -16,6 +20,23 @@ export interface IUser extends Document {
 
 // 2️⃣ Esquema
 const userSchema = new mongoose.Schema<IUser>({
+  avatar?: string;
+  isActive: boolean;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  
+  // Método personalizado
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+// Interface para el modelo estático
+interface IUserModel extends Model<IUser> {
+  // Aquí podrías agregar métodos estáticos si los necesitas
+}
+
+const userSchema = new mongoose.Schema<IUser, IUserModel>({
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -49,6 +70,8 @@ const userSchema = new mongoose.Schema<IUser>({
 
 // 3️⃣ Hash password antes de guardar
 userSchema.pre<IUser>('save', async function(next) {
+// Hash password antes de guardar
+userSchema.pre('save', async function(this: IUser, next: (err?: mongoose.CallbackError) => void) {
   if (!this.isModified('password')) return next();
 
   try {
@@ -68,3 +91,14 @@ userSchema.methods.comparePassword = async function(this: IUser, candidatePasswo
 
 // 5️⃣ Exportar modelo
 export default mongoose.model<IUser>('User', userSchema);
+    // catch() error is typed as unknown in TS; cast to mongoose.CallbackError for next()
+    next(error as mongoose.CallbackError);
+  }
+});
+
+// Método para comparar passwords
+userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+export default mongoose.model<IUser, IUserModel>('User', userSchema);
