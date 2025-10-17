@@ -60,8 +60,15 @@ export default function ForgotPassword() {
           </p>
         </>
       ) : (
-        <div style={styles.success} role="status" aria-live="polite">
-          ✅ Enviamos un enlace a <strong>{email}</strong>. Revisa tu bandeja y sigue las instrucciones.
+        <div style={styles.successWrap} role="status" aria-live="polite">
+          <div style={styles.success}>
+            ✅ Enviamos un enlace a <strong>{email}</strong>. Revisa tu bandeja y sigue las instrucciones.
+          </div>
+          <div style={{ marginTop: 12, textAlign: 'center' }}>
+            <Link to="/login" style={styles.backBtn}>
+              ← Regresar
+            </Link>
+          </div>
         </div>
       )}
     </div>
@@ -74,5 +81,7 @@ const styles: Record<string, CSSProperties> = {
   input: { flex: 1, padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8 },
   btn: { padding: "10px 14px", border: "none", borderRadius: 8, background: "#111", color: "#fff", cursor: "pointer" },
   success: { marginTop: 12, padding: 12, border: "1px solid #d1f0d1", background: "#f2fff2", borderRadius: 8, color: "#1a7d1a" },
+  successWrap: { display: 'flex', flexDirection: 'column', alignItems: 'stretch' },
+  backBtn: { display: 'inline-block', padding: '8px 12px', borderRadius: 8, background: '#eee', color: '#111', textDecoration: 'none' },
   error: { color: "#e53935", margin: "6px 0 0" },
 };
