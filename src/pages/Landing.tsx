@@ -1,3 +1,8 @@
+/**
+ * Landing/homepage component.
+ * Shows hero, featured categories and CTAs for registration.
+ * This component assumes the global Navbar is rendered by the layout.
+ */
 import { useNavigate } from "react-router-dom";
 import "./Landing.scss"; // lo creamos en el paso 4
 
@@ -6,15 +11,6 @@ export default function Landing() {
 
   return (
     <div className="land-wrap">
-      {/* Header */}
-      <header className="land-header">
-        <div className="brand">
-          <span className="logo-dot">▶</span> StreamFlix
-        </div>
-        <button className="btn-primary" onClick={() => navigate("/login")}>
-          INGRESAR
-        </button>
-      </header>
 
       {/* Hero */}
       <section className="hero">
@@ -67,10 +63,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="land-footer">
-        Proyecto Integrador – 2025
-      </footer>
+      {/* Footer is rendered globally via LayoutWithNav */}
     </div>
   );
 }

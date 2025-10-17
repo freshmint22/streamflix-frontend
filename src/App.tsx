@@ -14,5 +14,5 @@ export default function App() {
 
 const styles: Record<"app" | "main", CSSProperties> = {
   app: { display: "flex", flexDirection: "column", minHeight: "100vh" },
-  main: { flex: 1, background: "#f9f9f9" },
+  main: { flex: 1, background: "var(--bg)" },
 };

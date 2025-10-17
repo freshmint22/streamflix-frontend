@@ -64,14 +64,14 @@ const styles = {
   panel: {
     marginTop: 18,
     padding: 16,
-    border: "1px solid #eee",
+    border: "1px solid rgba(255,255,255,0.04)",
     borderRadius: 12,
-    background: "#fafafa",
+    background: "var(--panel)",
   },
   list: { listStyle: "none", padding: 0, marginTop: 16 },
   item: {
-    background: "#fff",
-    border: "1px solid #ddd",
+    background: "var(--panel)",
+    border: "1px solid rgba(255,255,255,0.04)",
     borderRadius: 8,
     padding: "10px 12px",
     marginBottom: 8,

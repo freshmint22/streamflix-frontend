@@ -1,3 +1,8 @@
+/**
+ * Login page component.
+ * Renders a form to authenticate users with email and password.
+ * On success stores the JWT token in localStorage under `sf_token` and navigates to /home.
+ */
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { CSSProperties } from "react";
@@ -57,9 +62,10 @@ const styles: Record<string, CSSProperties> = {
     maxWidth: 380,
     margin: "60px auto",
     padding: 20,
-    border: "1px solid #eee",
+    border: "1px solid rgba(0,0,0,0.08)",
     borderRadius: 12,
-    background: "#fff",
+    background: "var(--panel-light)",
+    color: "#111",
   },
   form: { display: "flex", flexDirection: "column", gap: 12, marginTop: 10 },
   error: { color: "#e53935", margin: "-4px 0 0" },
