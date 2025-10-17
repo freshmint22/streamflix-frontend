@@ -1,0 +1,17 @@
+.about-wrap {
+  max-width: 920px;
+  margin: 18px auto;
+  padding: 12px;
+}
+
+.about-header { margin-bottom: 14px; }
+.about-lead { color: #555; margin-top: 6px; }
+
+.about-section {
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+  background: var(--panel-light);
+  color: #111;
+}

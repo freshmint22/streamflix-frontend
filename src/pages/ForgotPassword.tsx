@@ -2,6 +2,11 @@ import { useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { recover } from "../services/users";
 
+/**
+ * ForgotPassword page component.
+ * Lets users request a password reset email by entering their account email.
+ * The UI intentionally shows a generic success message to avoid user enumeration.
+ */
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -60,8 +65,15 @@ export default function ForgotPassword() {
           </p>
         </>
       ) : (
-        <div style={styles.success} role="status" aria-live="polite">
-          ✅ Enviamos un enlace a <strong>{email}</strong>. Revisa tu bandeja y sigue las instrucciones.
+        <div style={styles.successWrap} role="status" aria-live="polite">
+          <div style={styles.success}>
+            ✅ Enviamos un enlace a <strong>{email}</strong>. Revisa tu bandeja y sigue las instrucciones.
+          </div>
+          <div style={{ marginTop: 12, textAlign: 'center' }}>
+            <Link to="/login" style={styles.backBtn}>
+              ← Regresar
+            </Link>
+          </div>
         </div>
       )}
     </div>
@@ -69,10 +81,12 @@ export default function ForgotPassword() {
 }
 
 const styles: Record<string, CSSProperties> = {
-  wrap: { maxWidth: 420, margin: "60px auto", padding: 20, border: "1px solid #eee", borderRadius: 12, background: "#fff" },
+  wrap: { maxWidth: 420, margin: "60px auto", padding: 20, border: "1px solid rgba(0,0,0,0.08)", borderRadius: 12, background: "var(--panel-light)", color: "#111" },
   form: { display: "flex", gap: 10, marginTop: 12 },
   input: { flex: 1, padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8 },
   btn: { padding: "10px 14px", border: "none", borderRadius: 8, background: "#111", color: "#fff", cursor: "pointer" },
   success: { marginTop: 12, padding: 12, border: "1px solid #d1f0d1", background: "#f2fff2", borderRadius: 8, color: "#1a7d1a" },
+  successWrap: { display: 'flex', flexDirection: 'column', alignItems: 'stretch' },
+  backBtn: { display: 'inline-block', padding: '8px 12px', borderRadius: 8, background: '#eee', color: '#111', textDecoration: 'none' },
   error: { color: "#e53935", margin: "6px 0 0" },
 };
