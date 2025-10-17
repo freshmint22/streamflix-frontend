@@ -12,6 +12,11 @@ type User = {
   createdAt?: string;
 };
 
+/**
+ * Profile page component.
+ * Fetches the authenticated user's profile, allows editing fields, changing password
+ * (via PUT) and account deletion (DELETE). Handles 401 by redirecting to login.
+ */
 export default function Profile() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
@@ -44,7 +49,7 @@ export default function Profile() {
         setError("");
         const res = await fetch(`${API_BASE}/users/me`, { headers: authHeaders() });
         if (res.status === 401) return handle401();
-        if (!res.ok) throw new Error("Failed to load profile");
+  if (!res.ok) throw new Error("Error al cargar el perfil");
         const data = (await res.json()) as Partial<User>;
         // Normaliza los campos mínimos esperados
         const normalized: User = {
@@ -57,7 +62,7 @@ export default function Profile() {
         setUser(normalized);
         setForm(normalized);
       } catch (e: any) {
-        setError(e?.message || "Unexpected error");
+        setError(e?.message || "Error inesperado");
       } finally {
         setLoadingPage(false);
       }
@@ -80,20 +85,20 @@ export default function Profile() {
         }),
       });
       if (res.status === 401) return handle401();
-      if (!res.ok) throw new Error("Update failed");
+  if (!res.ok) throw new Error("Error al actualizar");
       const updated = (await res.json()) as User;
       setUser(updated);
       setForm(updated);
       setEditing(false);
     } catch (e: any) {
-      setError(e?.message || "Unexpected error");
+      setError(e?.message || "Error inesperado");
     } finally {
       setLoading(false);
     }
   };
 
   const onDelete = async () => {
-    const ok = confirm("Are you sure you want to delete your account? This cannot be undone.");
+  const ok = confirm("¿Estás seguro de que quieres eliminar tu cuenta? Esto no se puede deshacer.");
     if (!ok) return;
     try {
       setLoading(true);
@@ -103,24 +108,34 @@ export default function Profile() {
         headers: authHeaders(),
       });
       if (res.status === 401) return handle401();
-      if (!res.ok) throw new Error("Delete failed");
+  if (!res.ok) throw new Error("Error al eliminar");
       // logout + redirect
       localStorage.removeItem("sf_token");
       navigate("/login");
     } catch (e: any) {
-      setError(e?.message || "Unexpected error");
+      setError(e?.message || "Error inesperado");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loadingPage) return <div style={styles.wrap}>Loading profile…</div>;
+  function formatDate(iso?: string) {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' });
+    } catch {
+      return iso;
+    }
+  }
+
+  if (loadingPage) return <div style={styles.wrap}>Cargando perfil…</div>;
 
   if (error) {
     return (
       <div style={styles.wrap}>
         <p aria-live="assertive" style={{ ...styles.error, marginTop: 10 }}>{error}</p>
-        <button style={styles.btnLight} onClick={() => window.location.reload()}>Reload</button>
+        <button style={styles.btnLight} onClick={() => window.location.reload()}>Recargar</button>
       </div>
     );
   }
@@ -129,39 +144,39 @@ export default function Profile() {
 
   return (
     <div style={styles.wrap}>
-      <h1>My Profile</h1>
+      <h1>Mi perfil</h1>
 
       {!editing ? (
         <div style={styles.card}>
-          <div><strong>First name:</strong> {user.firstName}</div>
-          <div><strong>Last name:</strong> {user.lastName || "—"}</div>
-          <div><strong>Age:</strong> {user.age ?? "—"}</div>
-          <div><strong>Email:</strong> {user.email}</div>
-          {user.createdAt && <div><strong>Member since:</strong> {user.createdAt}</div>}
+          <div><strong>Nombre:</strong> {user.firstName}</div>
+          <div><strong>Apellido:</strong> {user.lastName || "—"}</div>
+          <div><strong>Edad:</strong> {user.age ?? "—"}</div>
+          <div><strong>Correo:</strong> {user.email}</div>
+          {user.createdAt && <div><strong>Miembro desde:</strong> {formatDate(user.createdAt)}</div>}
 
           <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-            <button style={styles.btnDark} onClick={() => setEditing(true)}>Edit</button>
+            <button style={styles.btnDark} onClick={() => setEditing(true)}>Editar</button>
             <button style={styles.btnDanger} onClick={onDelete} disabled={loading}>
-              {loading ? "Deleting…" : "Delete account"}
+              {loading ? "Eliminando…" : "Eliminar cuenta"}
             </button>
           </div>
         </div>
       ) : (
         <form style={styles.card} onSubmit={onSave}>
-          <label style={styles.label}>First name</label>
+          <label style={styles.label}>Nombre</label>
           <input
             style={styles.input}
             value={form.firstName}
             onChange={(e) => setForm({ ...form, firstName: e.target.value })}
             required
           />
-          <label style={styles.label}>Last name</label>
+          <label style={styles.label}>Apellido</label>
           <input
             style={styles.input}
             value={form.lastName ?? ""}
             onChange={(e) => setForm({ ...form, lastName: e.target.value })}
           />
-          <label style={styles.label}>Age</label>
+          <label style={styles.label}>Edad</label>
           <input
             style={styles.input}
             type="number"
@@ -169,7 +184,7 @@ export default function Profile() {
             onChange={(e) => setForm({ ...form, age: e.target.value ? Number(e.target.value) : undefined })}
             min={0}
           />
-          <label style={styles.label}>Email</label>
+          <label style={styles.label}>Correo</label>
           <input
             style={styles.input}
             type="email"
@@ -182,7 +197,7 @@ export default function Profile() {
 
           <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
             <button type="submit" style={styles.btnDark} disabled={loading}>
-              {loading ? "Saving…" : "Save"}
+              {loading ? "Guardando…" : "Guardar"}
             </button>
             <button
               type="button"
@@ -193,7 +208,7 @@ export default function Profile() {
               }}
               disabled={loading}
             >
-              Cancel
+              Cancelar
             </button>
           </div>
         </form>
@@ -204,11 +219,11 @@ export default function Profile() {
 
 const styles: Record<string, CSSProperties> = {
   wrap: { maxWidth: 640, margin: "10px auto", padding: 8 },
-  card: { marginTop: 12, padding: 16, border: "1px solid #eee", borderRadius: 12, background: "#fff" },
-  label: { fontSize: 13, color: "#666", marginTop: 8 },
+  card: { marginTop: 12, padding: 16, border: "1px solid rgba(0,0,0,0.08)", borderRadius: 12, background: "var(--panel-light)", color: "#111" },
+  label: { fontSize: 13, color: "#444", marginTop: 8 },
   input: { padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8, marginTop: 6 },
   btnDark: { padding: "10px 12px", border: "none", borderRadius: 8, background: "#111", color: "#fff", cursor: "pointer" },
-  btnLight: { padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8, background: "#fff", cursor: "pointer" },
+  btnLight: { padding: "10px 12px", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8, background: "var(--panel-light)", cursor: "pointer", color: "#111" },
   btnDanger: { padding: "10px 12px", border: "none", borderRadius: 8, background: "#e53935", color: "#fff", cursor: "pointer" },
   error: { color: "#e53935" },
 };

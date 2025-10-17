@@ -1,14 +1,22 @@
 // src/services/api.ts
 // @ts-ignore
 const rawBase = import.meta.env.VITE_API_BASE as string | undefined;
-// Fallback a localhost:3000 si no está definida la variable de entorno
+
+/**
+ * Base URL for backend API used throughout the client.
+ * Reads from Vite environment variable VITE_API_BASE and falls back to localhost.
+ * This value is exported so services can import a single source of truth.
+ * @example
+ * import { API_BASE } from './api';
+ */
 export const API_BASE = rawBase && rawBase !== "" ? rawBase : "http://localhost:5000";
+
 if (!rawBase) {
-	console.warn(
-		"VITE_API_BASE no está definida. Usando fallback:",
-		API_BASE,
-		"— crea un archivo .env.local con VITE_API_BASE=http://tu-backend:puerto para evitar esto."
-	);
+  console.warn(
+    "VITE_API_BASE is not defined. Using fallback:",
+    API_BASE,
+    "— create a .env.local with VITE_API_BASE=http://your-backend:port to avoid this."
+  );
 } else {
-	console.log("Backend URL:", API_BASE);
+  console.log("Backend URL:", API_BASE);
 }

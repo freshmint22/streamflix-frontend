@@ -11,6 +11,11 @@ type Form = {
   password: string;
 };
 
+/**
+ * Register page component.
+ * Allows users to create a new account by providing name, age, email and password.
+ * Performs client-side validation and calls the users service to register.
+ */
 export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState<Form>({
@@ -156,7 +161,7 @@ export default function Register() {
 }
 
 const styles: Record<string, CSSProperties> = {
-  wrap: { maxWidth: 420, margin: "60px auto", padding: 20, border: "1px solid #eee", borderRadius: 12, background: "#fff" },
+  wrap: { maxWidth: 420, margin: "60px auto", padding: 20, border: "1px solid rgba(0,0,0,0.08)", borderRadius: 12, background: "var(--panel-light)", color: "#111" },
   form: { display: "flex", flexDirection: "column", gap: 12, marginTop: 10 },
   label: { fontSize: 13, color: "#666", marginTop: 8 },
   input: { padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8, marginTop: 6 },

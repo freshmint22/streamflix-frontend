@@ -53,6 +53,13 @@ async function toJsonOrError(res: Response) {
   }
 }
 
+/**
+ * Authenticate a user.
+ * POST /auth/login
+ * @param data Credentials object containing email and password
+ * @returns Promise resolving to an object with { token, user }
+ * @throws Error on authentication failure
+ */
 /** POST /auth/login */
 export async function login(data: LoginPayload): Promise<LoginResponse> {
   const r = await fetch(`${API_BASE}/auth/login`, {
@@ -68,6 +75,13 @@ export async function login(data: LoginPayload): Promise<LoginResponse> {
   return r.json();
 }
 
+/**
+ * Register a new user.
+ * POST /auth/register
+ * @param data Registration payload
+ * @returns Promise resolving to created user response
+ * @throws Error on validation or server failure
+ */
 /** POST /auth/register */
 export async function register(data: RegisterPayload) {
   const r = await fetch(`${API_BASE}/auth/register`, {
@@ -82,6 +96,13 @@ export async function register(data: RegisterPayload) {
   return r.json();
 }
 
+/**
+ * Request password recovery email.
+ * POST /auth/forgot-password
+ * @param email User email to send a recovery link to
+ * @returns Promise resolving to the server response
+ * @throws Error on failure to request recovery
+ */
 /** POST /auth/forgot-password */
 export async function recover(email: string) {
   const r = await fetch(`${API_BASE}/auth/forgot-password`, {
@@ -96,14 +117,26 @@ export async function recover(email: string) {
   return r.json();
 }
 
-/** GET /users/me (requiere token) */
+/**
+ * Get current authenticated user's profile.
+ * GET /users/me
+ * Requires Authorization header with Bearer token.
+ * @returns Promise resolving to the user profile object
+ */
+/** GET /users/me (requires token) */
 export async function getMe(): Promise<Me> {
   const r = await fetch(`${API_BASE}/users/me`, { headers: authHeaders() });
   if (r.status === 401) logout401();
   return toJsonOrError(r);
 }
 
-/** PUT /users/me (requiere token) */
+/**
+ * Update current user's profile.
+ * PUT /users/me
+ * @param data Partial profile fields to update
+ * @returns Promise resolving to updated user profile
+ */
+/** PUT /users/me (requires token) */
 export async function updateMe(data: Partial<RegisterPayload>): Promise<Me> {
   const r = await fetch(`${API_BASE}/users/me`, {
     method: "PUT",
@@ -114,7 +147,12 @@ export async function updateMe(data: Partial<RegisterPayload>): Promise<Me> {
   return toJsonOrError(r);
 }
 
-/** DELETE /users/me (requiere token) */
+/**
+ * Delete the current authenticated user's account.
+ * DELETE /users/me
+ * @returns Promise resolving to deletion confirmation
+ */
+/** DELETE /users/me (requires token) */
 export async function deleteMe() {
   const r = await fetch(`${API_BASE}/users/me`, {
     method: "DELETE",

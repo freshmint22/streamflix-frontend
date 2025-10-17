@@ -2,6 +2,11 @@ import { useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { recover } from "../services/users";
 
+/**
+ * ForgotPassword page component.
+ * Lets users request a password reset email by entering their account email.
+ * The UI intentionally shows a generic success message to avoid user enumeration.
+ */
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -76,7 +81,7 @@ export default function ForgotPassword() {
 }
 
 const styles: Record<string, CSSProperties> = {
-  wrap: { maxWidth: 420, margin: "60px auto", padding: 20, border: "1px solid #eee", borderRadius: 12, background: "#fff" },
+  wrap: { maxWidth: 420, margin: "60px auto", padding: 20, border: "1px solid rgba(0,0,0,0.08)", borderRadius: 12, background: "var(--panel-light)", color: "#111" },
   form: { display: "flex", gap: 10, marginTop: 12 },
   input: { flex: 1, padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8 },
   btn: { padding: "10px 14px", border: "none", borderRadius: 8, background: "#111", color: "#fff", cursor: "pointer" },
