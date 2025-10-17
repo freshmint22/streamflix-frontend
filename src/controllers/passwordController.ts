@@ -1,54 +1,43 @@
+import { Request, Response } from "express";
+import User from "../models/Users";
 import crypto from "crypto";
-import User from "../models/User.js";
-import { sendEmail } from "../utils/sendEmail.js";
+import { sendEmail } from "../utils/sendEmail";
 
-export const forgotPassword = async (req, res) => {
+export const forgotPassword = async (req: Request, res: Response) => {
   const { email } = req.body;
-  try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
 
-    const token = crypto.randomBytes(32).toString("hex");
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hora
-    await user.save();
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: "User not found" });
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-    const html = `
-      <p>Hola ${user.name},</p>
-      <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
-      <a href="${resetLink}">${resetLink}</a>
-      <p>Este enlace expirará en 1 hora.</p>
-    `;
+  // Crear token temporal
+  const token = crypto.randomBytes(20).toString("hex");
 
-    await sendEmail(user.email, "Recuperación de contraseña", html);
+  user.resetPasswordToken = token;
+  user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hora
+  await user.save();
 
-    res.json({ message: "Email enviado correctamente" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error enviando el correo" });
-  }
+  const resetUrl = `http://localhost:5173/reset-password/${token}`;
+  const message = `<p>Click <a href="${resetUrl}">aquí</a> para restablecer tu contraseña</p>`;
+
+  await sendEmail(user.email, "Password Reset", message);
+
+  res.status(200).json({ message: "Reset email sent" });
 };
 
-export const resetPassword = async (req, res) => {
-  const { token } = req.params;
-  const { password } = req.body;
-  try {
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
-    });
+export const resetPassword = async (req: Request, res: Response) => {
+  const { token, password } = req.body;
 
-    if (!user) return res.status(400).json({ message: "Token inválido o expirado" });
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: new Date() }
+  });
 
-    user.password = password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
+  if (!user) return res.status(400).json({ message: "Invalid or expired token" });
 
-    res.json({ message: "Contraseña actualizada correctamente" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al restablecer contraseña" });
-  }
+  user.password = password; // se hashea automáticamente por el pre-save
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+
+  res.status(200).json({ message: "Password reset successful" });
 };

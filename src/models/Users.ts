@@ -1,54 +1,70 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, CallbackError } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-const userSchema = new mongoose.Schema({
+// 1️⃣ Definir una interfaz para el usuario
+export interface IUser extends Document {
+  email: string;
+  password: string;
+  name: string;
+  avatar?: string | null;
+  isActive: boolean;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+// 2️⃣ Esquema
+const userSchema = new mongoose.Schema<IUser>({
   email: {
     type: String,
     required: [true, 'Email is required'],
     unique: true,
     lowercase: true,
-    trim: true
+    trim: true,
   },
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters']
+    minlength: [6, 'Password must be at least 6 characters'],
   },
   name: {
     type: String,
     required: [true, 'Name is required'],
-    trim: true
+    trim: true,
   },
   avatar: {
     type: String,
-    default: null
+    default: null,
   },
   isActive: {
     type: Boolean,
-    default: true
+    default: true,
   },
-  resetPasswordToken: String, // Token temporal para restablecer contraseña
-  resetPasswordExpires: Date  // Fecha de expiración del token
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
-// Hash password antes de guardar
-userSchema.pre('save', async function(next) {
+// 3️⃣ Hash password antes de guardar
+userSchema.pre<IUser>('save', async function(next) {
   if (!this.isModified('password')) return next();
-  
+
   try {
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
-    next(error);
+    // 👇 Convertir error a CallbackError para TypeScript
+    next(error as CallbackError);
   }
 });
 
-// Método para comparar passwords
-userSchema.methods.comparePassword = async function(candidatePassword) {
+// 4️⃣ Método para comparar passwords
+userSchema.methods.comparePassword = async function(this: IUser, candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-export default mongoose.model('User', userSchema);
+// 5️⃣ Exportar modelo
+export default mongoose.model<IUser>('User', userSchema);
