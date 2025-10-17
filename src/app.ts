@@ -67,40 +67,7 @@ try{
 }catch(err){ /* ignore if not present */ }
 
 // --- Users: Get profile (MOCK, protegido) ---
-app.get("/users/me", requireAuth, (_req: Request, res: Response) => {
-  // En real: leer usuario del token/JWT
-  return res.json({
-    _id: "u_mock",
-    firstName: "Anderson",
-    lastName: "Demo",
-    age: 20,
-    email: "anderson@example.com",
-    createdAt: "2025-10-01",
-  });
-});
-
-// --- Users: Update profile (MOCK, protegido) ---
-app.put("/users/me", requireAuth, (req: Request, res: Response) => {
-  const { firstName, lastName, age, email } = (req.body || {}) as {
-    firstName?: string;
-    lastName?: string;
-    age?: number;
-    email?: string;
-  };
-  return res.json({
-    _id: "u_mock",
-    firstName: firstName || "Anderson",
-    lastName: lastName || "Demo",
-    age: Number.isFinite(age) ? (age as number) : 20,
-    email: email || "anderson@example.com",
-    updatedAt: new Date().toISOString(),
-  });
-});
-
-// --- Users: Delete account (MOCK, protegido) ---
-app.delete("/users/me", requireAuth, (_req: Request, res: Response) => {
-  return res.json({ message: "Account deleted (mock)" });
-});
+// NOTE: User routes are mounted from `user.routes` and are protected there with requireAuth
 // NOTE: Frontend assets are maintained in a separate project. Movie REST endpoints are exposed under /api/movies
   
 
