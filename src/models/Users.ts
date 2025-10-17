@@ -7,6 +7,7 @@ export interface IUser extends Document {
   password: string;
   name: string;
   avatar?: string | null;
+  role?: 'user' | 'admin';
   isActive: boolean;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
@@ -36,6 +37,11 @@ const userSchema = new mongoose.Schema<IUser>({
   avatar: {
     type: String,
     default: null,
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
   },
   isActive: {
     type: Boolean,
