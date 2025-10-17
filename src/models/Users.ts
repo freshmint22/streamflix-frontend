@@ -1,41 +1,24 @@
-import mongoose, { Document, CallbackError } from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-/**
- * User document interface.
- */
 export interface IUser extends Document {
   email: string;
   password: string;
-    name: string;
-    firstName?: string;
-    lastName?: string;
-    age?: number;
-    avatar?: string | null;
-    role?: 'user' | 'admin';
-    isActive: boolean;
-    resetPasswordToken?: string;
-    resetPasswordExpires?: Date;
-
-  comparePassword(candidatePassword: string): Promise<boolean>;
-}
-
-// 2️⃣ Schema
-const userSchema = new mongoose.Schema<IUser>({
-  avatar?: string;
+  name: string;
+  firstName?: string;
+  lastName?: string;
+  age?: number;
+  avatar?: string | null;
+  role?: 'user' | 'admin';
   isActive: boolean;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  
-  // Método personalizado
+
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-// Interface para el modelo estático
 interface IUserModel extends Model<IUser> {
-  // Aquí podrías agregar métodos estáticos si los necesitas
+  // add static helpers here if needed
 }
 
 const userSchema = new mongoose.Schema<IUser, IUserModel>({
@@ -84,25 +67,21 @@ const userSchema = new mongoose.Schema<IUser, IUserModel>({
     type: Boolean,
     default: true,
   },
-  resetPasswordToken: String,
-  resetPasswordExpires: Date,
+  resetPasswordToken: { type: String, default: undefined },
+  resetPasswordExpires: { type: Date, default: undefined },
 }, {
   timestamps: true,
 });
 
-// 3️⃣ Hash password antes de guardar
+// Hash password before saving
 userSchema.pre<IUser>('save', async function(next) {
-// Hash password antes de guardar
-userSchema.pre('save', async function(this: IUser, next: (err?: mongoose.CallbackError) => void) {
   if (!this.isModified('password')) return next();
-
   try {
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (error) {
-    // 👇 Convertir error a CallbackError para TypeScript
-    next(error as CallbackError);
+  } catch (err) {
+    next(err as any);
   }
 });
 
@@ -114,19 +93,7 @@ userSchema.pre<IUser>('save', function(next) {
   next();
 });
 
-// 4️⃣ Método para comparar passwords
-userSchema.methods.comparePassword = async function(this: IUser, candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password);
-};
-
-// 5️⃣ Exportar modelo
-export default mongoose.model<IUser>('User', userSchema);
-    // catch() error is typed as unknown in TS; cast to mongoose.CallbackError for next()
-    next(error as mongoose.CallbackError);
-  }
-});
-
-// Método para comparar passwords
+// Compare password helper
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
