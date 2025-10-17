@@ -20,7 +20,24 @@ const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
   .split(",")
   .map((s) => s.trim());
 
-app.use(cors({ origin: corsOrigins, credentials: true }));
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // allow requests with no origin (e.g., curl, server-to-server)
+    if (!origin) return callback(null, true);
+    if (corsOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions as any));
+
+// NOTE: cors middleware will handle OPTIONS preflight automatically.
+// Avoid registering a literal '*' route here because some path-to-regexp
+// versions throw when parsing a bare '*' pattern.
+
 app.use(express.json());
 
 // Security headers
