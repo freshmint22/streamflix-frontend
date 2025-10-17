@@ -5,6 +5,13 @@ import User from '../models/Users';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
 
+/**
+ * Middleware: requireAuth
+ * Verifies a Bearer JWT from the Authorization header and attaches the
+ * authenticated user's id to `req.userId`.
+ *
+ * Returns 401 for missing/invalid or revoked tokens.
+ */
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
 	const auth = req.headers.authorization || '';
 	const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -20,6 +27,12 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 export default requireAuth;
+
+/**
+ * Middleware: requireAdmin
+ * Ensures the authenticated user exists and has role === 'admin'.
+ * Returns 401 if the user is missing; 403 if not admin.
+ */
 
 export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
 	try {

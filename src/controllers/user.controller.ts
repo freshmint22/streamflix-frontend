@@ -32,11 +32,28 @@ export async function updateMe(req: Request, res: Response){
   try{
     const userId = getUserId(req);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    const { name, email, avatar } = req.body || {};
+    const { firstName, lastName, age, email, password, avatar } = req.body || {};
     const updates: any = {};
-    if (name) updates.name = name;
-    if (email) updates.email = email.toLowerCase().trim();
+    if (firstName !== undefined) updates.firstName = firstName;
+    if (lastName !== undefined) updates.lastName = lastName;
+    if (age !== undefined) updates.age = age;
+    if (email !== undefined) updates.email = email.toLowerCase().trim();
     if (avatar !== undefined) updates.avatar = avatar;
+
+    // If password change requested, load user and set password to trigger pre-save hash
+    if (password) {
+      const userObj = await User.findById(userId).exec();
+      if (!userObj) return res.status(404).json({ error: 'User not found' });
+      if (updates.firstName !== undefined) userObj.firstName = updates.firstName;
+      if (updates.lastName !== undefined) userObj.lastName = updates.lastName;
+      if (updates.age !== undefined) userObj.age = updates.age;
+      if (updates.email !== undefined) userObj.email = updates.email;
+      if (updates.avatar !== undefined) userObj.avatar = updates.avatar;
+      userObj.password = password;
+      await userObj.save();
+      const u = userObj.toObject(); delete (u as any).password;
+      return res.json(u);
+    }
 
     const user = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-password').exec();
     if (!user) return res.status(404).json({ error: 'User not found' });

@@ -2,20 +2,26 @@ import mongoose, { Document, CallbackError } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 // 1️⃣ Definir una interfaz para el usuario
+/**
+ * User document interface.
+ */
 export interface IUser extends Document {
   email: string;
   password: string;
-  name: string;
-  avatar?: string | null;
-  role?: 'user' | 'admin';
-  isActive: boolean;
-  resetPasswordToken?: string;
-  resetPasswordExpires?: Date;
+    name: string;
+    firstName?: string;
+    lastName?: string;
+    age?: number;
+    avatar?: string | null;
+    role?: 'user' | 'admin';
+    isActive: boolean;
+    resetPasswordToken?: string;
+    resetPasswordExpires?: Date;
 
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-// 2️⃣ Esquema
+// 2️⃣ Schema
 const userSchema = new mongoose.Schema<IUser>({
   email: {
     type: String,
@@ -33,6 +39,21 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     required: [true, 'Name is required'],
     trim: true,
+  },
+  firstName: {
+    type: String,
+    trim: true,
+    default: undefined,
+  },
+  lastName: {
+    type: String,
+    trim: true,
+    default: undefined,
+  },
+  age: {
+    type: Number,
+    min: 0,
+    default: undefined,
   },
   avatar: {
     type: String,
@@ -65,6 +86,14 @@ userSchema.pre<IUser>('save', async function(next) {
     // 👇 Convertir error a CallbackError para TypeScript
     next(error as CallbackError);
   }
+});
+
+// Keep `name` in sync with firstName/lastName when provided
+userSchema.pre<IUser>('save', function(next) {
+  if (this.firstName) {
+    this.name = `${this.firstName}${this.lastName ? ' ' + this.lastName : ''}`.trim();
+  }
+  next();
 });
 
 // 4️⃣ Método para comparar passwords

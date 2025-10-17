@@ -2,9 +2,14 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import path from 'path';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
 import authRouter from './routes/auth.routes';
 import userRouter from './routes/user.routes';
 import movieRouter from './routes/movie.routes';
+import playbackRouter from './routes/playback.routes';
 import jwt from 'jsonwebtoken';
 import { isTokenBlacklisted } from './lib/tokenBlacklist';
 
@@ -17,6 +22,13 @@ const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
 
 app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json());
+
+// Security headers
+app.use(helmet());
+
+// Basic rate limiting
+const limiter = rateLimit({ windowMs: 1000 * 60, max: 300 });
+app.use(limiter);
 
 // Ruta de prueba
 app.get("/health", (_req: Request, res: Response) => {
@@ -45,6 +57,14 @@ app.use('/auth', authRouter);
 app.use('/users', userRouter);
 // Movies REST API (persistent)
 app.use('/api/movies', movieRouter);
+// Playback endpoints
+app.use('/api/playback', playbackRouter);
+
+// Swagger UI (serve openapi.yaml if present)
+try{
+  const doc = YAML.load(path.join(__dirname, '..', 'openapi.yaml'));
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(doc));
+}catch(err){ /* ignore if not present */ }
 
 // --- Users: Get profile (MOCK, protegido) ---
 app.get("/users/me", requireAuth, (_req: Request, res: Response) => {

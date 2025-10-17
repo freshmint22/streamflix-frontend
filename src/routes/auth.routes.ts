@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { register, login, logout, forgotPassword, resetPassword } from '../controllers/auth.controller';
+import { validateBody, registerSchema, loginSchema } from '../middleware/validation';
 
 const router = Router();
 
 // POST /auth/register
-router.post('/register', register);
+router.post('/register', validateBody(registerSchema), register);
 
 // POST /auth/login
-router.post('/login', login);
+router.post('/login', validateBody(loginSchema), login);
 
 // DELETE /auth/logout
 router.delete('/logout', logout);

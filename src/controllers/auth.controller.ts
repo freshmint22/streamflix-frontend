@@ -11,13 +11,19 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
  * Register a new user and return a JWT token and user profile.
  *
  * POST /auth/register
- * Body: { firstName, lastName?, email, password }
+ * Body: { firstName, lastName?, age?, email, password }
+ *
+ * Responses:
+ *  - 201: { token, user }
+ *  - 400: validation error
+ *  - 409: email already in use
  */
 export async function register(req: Request, res: Response) {
   try {
-    const { firstName, lastName, email, password } = (req.body || {}) as {
+    const { firstName, lastName, age, email, password } = (req.body || {}) as {
       firstName?: string;
       lastName?: string;
+      age?: number;
       email?: string;
       password?: string;
     };
@@ -26,13 +32,20 @@ export async function register(req: Request, res: Response) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const name = `${firstName}${lastName ? ' ' + lastName : ''}`.trim();
+  const name = `${firstName}${lastName ? ' ' + lastName : ''}`.trim();
 
     // Check duplicate email
     const existing = await User.findOne({ email: email.toLowerCase().trim() }).exec();
     if (existing) return res.status(409).json({ error: 'Email already in use' });
 
-    const user = new User({ email: email.toLowerCase().trim(), password, name });
+    const user = new User({
+      email: email.toLowerCase().trim(),
+      password,
+      name,
+      firstName,
+      lastName,
+      age,
+    });
     await user.save();
 
     const token = jwt.sign({ sub: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
@@ -41,6 +54,9 @@ export async function register(req: Request, res: Response) {
       _id: user._id,
       email: user.email,
       name: user.name,
+      firstName: (user as any).firstName,
+      lastName: (user as any).lastName,
+      age: (user as any).age,
       avatar: user.avatar,
       createdAt: (user as any).createdAt,
     };
@@ -57,6 +73,10 @@ export async function register(req: Request, res: Response) {
  *
  * POST /auth/login
  * Body: { email, password }
+ *
+ * Responses:
+ *  - 200: { token, user }
+ *  - 401: invalid credentials
  */
 export async function login(req: Request, res: Response) {
   try {
@@ -91,6 +111,9 @@ export async function login(req: Request, res: Response) {
  *
  * DELETE /auth/logout
  * Authorization: Bearer <token>
+ *
+ * This adds the token to an in-memory blacklist. In production a persistent
+ * store (Redis) is recommended to survive restarts.
  */
 export async function logout(req: Request, res: Response) {
   try {
