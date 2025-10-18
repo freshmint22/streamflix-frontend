@@ -20,7 +20,43 @@ const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
   .split(",")
   .map((s) => s.trim());
 
-app.use(cors({ origin: corsOrigins, credentials: true }));
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // allow requests with no origin (e.g., curl, server-to-server)
+    if (!origin) {
+      console.log('[CORS] no origin (server or curl) - allow');
+      return callback(null, true);
+    }
+
+    // support wildcard '*' in CORS_ORIGIN to allow any origin (use carefully)
+    if (corsOrigins.includes('*')) {
+      console.log('[CORS] wildcard * configured - allow origin=', origin);
+      return callback(null, true);
+    }
+
+    // normalize origin casing before comparison
+    const normalized = origin.toLowerCase();
+    const allowed = corsOrigins.some((o) => o.toLowerCase() === normalized);
+
+    console.log('[CORS] origin=', origin, 'allowed=', allowed, 'allowedList=', corsOrigins);
+    if (allowed) return callback(null, true);
+    // Deny the origin without throwing an exception - return false so cors middleware
+    // will not set Access-Control-Allow-Origin. Throwing an Error here causes the
+    // request to error out before CORS headers are applied (observed as no header).
+    console.warn('[CORS] denying origin=', origin);
+    return callback(null, false);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions as any));
+
+// NOTE: cors middleware will handle OPTIONS preflight automatically.
+// Avoid registering a literal '*' route here because some path-to-regexp
+// versions throw when parsing a bare '*' pattern.
+
 app.use(express.json());
 
 // Security headers
