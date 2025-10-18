@@ -47,6 +47,7 @@ const corsOptions = {
     return callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
   optionsSuccessStatus: 204,
 };
@@ -76,7 +77,14 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
   const auth = req.headers.authorization || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   const secret = process.env.JWT_SECRET || 'dev_secret_change_me';
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  if (!token) {
+    // In production, require token. In development allow a mock user so UI flows
+    // (profile, edit) can be tested without a real login flow.
+    if (process.env.NODE_ENV === 'production') return res.status(401).json({ error: 'Unauthorized' });
+    console.warn('[AUTH] no token provided — attaching mock dev user');
+    (req as any).userId = 'dev_mock_user';
+    return next();
+  }
   if (isTokenBlacklisted(token)) return res.status(401).json({ error: 'Token revoked' });
   try {
     const payload = jwt.verify(token, secret) as any;
