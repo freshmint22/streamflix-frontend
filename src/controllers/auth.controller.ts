@@ -128,6 +128,37 @@ export async function logout(req: Request, res: Response) {
   }
 }
 
+/**
+ * Demo login: issues a JWT for a mock user when ALLOW_DEMO_LOGIN=true.
+ * POST /auth/demo-login
+ * Body: { firstName?, email? }
+ * Returns: { token, user }
+ */
+export async function demoLogin(req: Request, res: Response) {
+  try {
+    if (process.env.ALLOW_DEMO_LOGIN !== 'true') {
+      return res.status(403).json({ error: 'Demo login disabled' });
+    }
+
+    const { firstName = 'Demo', email = 'demo@example.com' } = (req.body || {}) as any;
+    const mockId = `demo_${Date.now()}`;
+    const token = jwt.sign({ sub: mockId, email }, JWT_SECRET, { expiresIn: '7d' });
+
+    const userSafe = {
+      _id: mockId,
+      email,
+      name: firstName,
+      firstName,
+      createdAt: new Date().toISOString(),
+    };
+
+    return res.json({ token, user: userSafe });
+  } catch (err: any) {
+    console.error('Demo login error:', err?.message || err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 export const forgotPassword = forgotPasswordWithEmail;
 export const resetPassword = resetPasswordWithEmail;
 
