@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { CSSProperties } from "react";
 import { login } from "../services/users";
+import { API_BASE } from "../services/api";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -38,6 +39,30 @@ export default function Login() {
     }
   };
 
+  const demoEnabled = (import.meta.env.VITE_ALLOW_DEMO as string) === 'true';
+
+  const onDemo = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const r = await fetch(`${API_BASE}/auth/demo-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName: 'Demo' }),
+      });
+      if (!r.ok) throw new Error('Demo login failed');
+      const data = await r.json();
+      const token = (data as any)?.token;
+      if (!token) throw new Error('No token from demo');
+      localStorage.setItem('sf_token', token);
+      navigate('/home');
+    } catch (err: any) {
+      setError(err?.message || 'Demo login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={styles.wrap}>
       <h1>Iniciar sesión</h1>
@@ -50,6 +75,11 @@ export default function Login() {
         <button className="btn" type="submit" disabled={loading || !email || !pass}>
           {loading ? "Entrando..." : "Entrar"}
         </button>
+        {demoEnabled && (
+          <button type="button" className="btn" style={{ marginTop: 8 }} onClick={onDemo} disabled={loading}>
+            {loading ? 'Entrando...' : 'Entrar como demo'}
+          </button>
+        )}
       </form>
       <p style={{ marginTop: 10 }}><Link to="/forgot">¿Olvidaste tu contraseña?</Link></p>
       <p style={{ marginTop: 6 }}>¿No tienes cuenta? <Link to="/register">Regístrate</Link></p>
