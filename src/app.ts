@@ -10,13 +10,18 @@ import authRouter from './routes/auth.routes';
 import userRouter from './routes/user.routes';
 import movieRouter from './routes/movie.routes';
 import playbackRouter from './routes/playback.routes';
+import favoriteRouter from './routes/favorite.routes';
+import videoRouter from './routes/video.routes';
 import jwt from 'jsonwebtoken';
 import { isTokenBlacklisted } from './lib/tokenBlacklist';
 
 const app = express();
 
 // CORS: permite localhost y tu Vercel
-const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+// Nota: añadimos http://localhost:5174 como origen por defecto para desarrollo local
+// (el frontend Vite usa 5173 o 5174 dependiendo de la configuración). En producción
+// usa la variable de entorno CORS_ORIGIN para listar dominios explícitos.
+const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:5174")
   .split(",")
   .map((s) => s.trim());
 
@@ -91,6 +96,12 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
     (req as any).userId = payload?.sub || payload?.id;
     return next();
   } catch (err) {
+    // Log a truncated token and the verification error to help debugging (do not log full token in production)
+    try {
+      const t = token || '';
+      const preview = t.length > 10 ? `${t.slice(0, 6)}...${t.slice(-4)}` : t;
+      console.error('[AUTH] token verify failed preview=', preview, 'error=', (err as any)?.message || err);
+    } catch (e) { /* ignore logging errors */ }
     return res.status(401).json({ error: 'Unauthorized' });
   }
 }
@@ -103,6 +114,10 @@ app.use('/users', userRouter);
 app.use('/api/movies', movieRouter);
 // Playback endpoints
 app.use('/api/playback', playbackRouter);
+// Favorites endpoints
+app.use('/api/favorites', favoriteRouter);
+// Video search (Pexels proxy)
+app.use('/api/videos', videoRouter);
 
 // Swagger UI (serve openapi.yaml if present)
 try{
@@ -110,41 +125,7 @@ try{
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(doc));
 }catch(err){ /* ignore if not present */ }
 
-// --- Users: Get profile (MOCK, protegido) ---
-app.get("/users/me", requireAuth, (_req: Request, res: Response) => {
-  // En real: leer usuario del token/JWT
-  return res.json({
-    _id: "u_mock",
-    firstName: "Anderson",
-    lastName: "Demo",
-    age: 20,
-    email: "anderson@example.com",
-    createdAt: "2025-10-01",
-  });
-});
-
-// --- Users: Update profile (MOCK, protegido) ---
-app.put("/users/me", requireAuth, (req: Request, res: Response) => {
-  const { firstName, lastName, age, email } = (req.body || {}) as {
-    firstName?: string;
-    lastName?: string;
-    age?: number;
-    email?: string;
-  };
-  return res.json({
-    _id: "u_mock",
-    firstName: firstName || "Anderson",
-    lastName: lastName || "Demo",
-    age: Number.isFinite(age) ? (age as number) : 20,
-    email: email || "anderson@example.com",
-    updatedAt: new Date().toISOString(),
-  });
-});
-
-// --- Users: Delete account (MOCK, protegido) ---
-app.delete("/users/me", requireAuth, (_req: Request, res: Response) => {
-  return res.json({ message: "Account deleted (mock)" });
-});
+// User routes are mounted via `userRouter` (see above). Removed mock endpoints.
 // NOTE: Frontend assets are maintained in a separate project. Movie REST endpoints are exposed under /api/movies
   
 

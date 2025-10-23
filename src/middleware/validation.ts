@@ -3,8 +3,11 @@ import Joi from 'joi';
 
 /**
  * Validation middleware helpers using Joi.
+ *
+ * The `validateBody` higher-order function returns an express middleware that
+ * validates `req.body` against the provided Joi schema, strips unknown fields
+ * and returns 400 with details when validation fails.
  */
-
 export function validateBody(schema: Joi.ObjectSchema) {
   return (req: Request, res: Response, next: NextFunction) => {
     const { error, value } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
@@ -14,6 +17,9 @@ export function validateBody(schema: Joi.ObjectSchema) {
   };
 }
 
+/**
+ * Schemas used across the API for request validation.
+ */
 export const registerSchema = Joi.object({
   firstName: Joi.string().min(1).required(),
   lastName: Joi.string().allow('', null),

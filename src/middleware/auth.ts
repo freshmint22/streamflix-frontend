@@ -7,10 +7,15 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
 
 /**
  * Middleware: requireAuth
- * Verifies a Bearer JWT from the Authorization header and attaches the
+ *
+ * Verifies a Bearer JWT token from the Authorization header and attaches the
  * authenticated user's id to `req.userId`.
  *
  * Returns 401 for missing/invalid or revoked tokens.
+ *
+ * @param req Express Request
+ * @param res Express Response
+ * @param next Express NextFunction
  */
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
 	const auth = req.headers.authorization || '';
@@ -30,8 +35,13 @@ export default requireAuth;
 
 /**
  * Middleware: requireAdmin
+ *
  * Ensures the authenticated user exists and has role === 'admin'.
  * Returns 401 if the user is missing; 403 if not admin.
+ *
+ * @param req Express Request
+ * @param res Express Response
+ * @param next Express NextFunction
  */
 
 export async function requireAdmin(req: Request, res: Response, next: NextFunction) {

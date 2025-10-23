@@ -1,6 +1,9 @@
 /**
  * In-memory token blacklist used for simple JWT revocation (logout).
- * NOTE: ephemeral — use Redis or a persistent store for production.
+ *
+ * NOTE: This is ephemeral and will be cleared on process restart. For
+ * production deployments with multiple instances use Redis or another
+ * persistent store.
  */
 const blacklist = new Set<string>();
 
@@ -15,7 +18,8 @@ export function addTokenToBlacklist(token: string) {
 
 /**
  * Check if a token has been blacklisted.
- * @returns boolean
+ * @param token JWT string
+ * @returns boolean whether token is blacklisted
  */
 export function isTokenBlacklisted(token: string) {
   return blacklist.has(token);
