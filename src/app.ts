@@ -16,7 +16,10 @@ import { isTokenBlacklisted } from './lib/tokenBlacklist';
 const app = express();
 
 // CORS: permite localhost y tu Vercel
-const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+// Nota: añadimos http://localhost:5174 como origen por defecto para desarrollo local
+// (el frontend Vite usa 5173 o 5174 dependiendo de la configuración). En producción
+// usa la variable de entorno CORS_ORIGIN para listar dominios explícitos.
+const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:5174")
   .split(",")
   .map((s) => s.trim());
 
@@ -91,6 +94,12 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
     (req as any).userId = payload?.sub || payload?.id;
     return next();
   } catch (err) {
+    // Log a truncated token and the verification error to help debugging (do not log full token in production)
+    try {
+      const t = token || '';
+      const preview = t.length > 10 ? `${t.slice(0, 6)}...${t.slice(-4)}` : t;
+      console.error('[AUTH] token verify failed preview=', preview, 'error=', (err as any)?.message || err);
+    } catch (e) { /* ignore logging errors */ }
     return res.status(401).json({ error: 'Unauthorized' });
   }
 }
