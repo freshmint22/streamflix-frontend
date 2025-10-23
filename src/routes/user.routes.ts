@@ -1,13 +1,15 @@
 import { Router } from 'express';
 import { getMe, updateMe, deleteMe } from '../controllers/user.controller';
 import { validateBody, userUpdateSchema } from '../middleware/validation';
-import requireAuth from '../middleware/auth';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 
-// Protect profile routes with authentication
-router.get('/me', requireAuth, getMe);
-router.put('/me', requireAuth, validateBody(userUpdateSchema), updateMe);
-router.delete('/me', requireAuth, deleteMe);
+// Protect all user routes with authentication
+router.use(requireAuth as any);
+
+router.get('/me', getMe);
+router.put('/me', validateBody(userUpdateSchema), updateMe);
+router.delete('/me', deleteMe);
 
 export default router;

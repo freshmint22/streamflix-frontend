@@ -22,7 +22,5 @@ router.post('/forgot-password', forgotPassword);
 // POST /auth/reset-password
 router.post('/reset-password', resetPassword);
 
-// POST /auth/login
-router.post('/login', login);
 
 export default router;

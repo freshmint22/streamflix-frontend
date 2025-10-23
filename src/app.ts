@@ -9,9 +9,8 @@ import authRouter from './routes/auth.routes';
 import userRouter from './routes/user.routes';
 import movieRouter from './routes/movie.routes';
 import playbackRouter from './routes/playback.routes';
-import passwordRouter from './routes/password.routes'; // ✅ nombre corregido
 import favoriteRouter from './routes/favorite.routes';
-import ratingRouter from './routes/rating.routes';
+import videoRouter from './routes/video.routes';
 import jwt from 'jsonwebtoken';
 import { isTokenBlacklisted } from './lib/tokenBlacklist';
 
@@ -112,15 +111,19 @@ app.use('/api/password', passwordRouter); // ✅ para forgot-password, reset-pas
 app.use('/api/users', userRouter);
 app.use('/api/movies', movieRouter);
 app.use('/api/playback', playbackRouter);
+// Favorites endpoints
 app.use('/api/favorites', favoriteRouter);
-app.use('/api/ratings', ratingRouter);
+// Video search (Pexels proxy)
+app.use('/api/videos', videoRouter);
 
 // Swagger UI (serve openapi.yaml if present)
 try {
   const doc = YAML.load(path.join(__dirname, '..', 'openapi.yaml'));
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(doc));
-} catch (err) {
-  /* ignore if not present */
-}
+}catch(err){ /* ignore if not present */ }
+
+// User routes are mounted via `userRouter` (see above). Removed mock endpoints.
+// NOTE: Frontend assets are maintained in a separate project. Movie REST endpoints are exposed under /api/movies
+  
 
 export default app;
