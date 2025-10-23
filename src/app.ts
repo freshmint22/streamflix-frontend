@@ -10,6 +10,8 @@ import userRouter from './routes/user.routes';
 import movieRouter from './routes/movie.routes';
 import playbackRouter from './routes/playback.routes';
 import passwordRouter from './routes/password.routes'; // ✅ nombre corregido
+import favoriteRouter from './routes/favorite.routes';
+import ratingRouter from './routes/rating.routes';
 import jwt from 'jsonwebtoken';
 import { isTokenBlacklisted } from './lib/tokenBlacklist';
 
@@ -110,6 +112,8 @@ app.use('/api/password', passwordRouter); // ✅ para forgot-password, reset-pas
 app.use('/api/users', userRouter);
 app.use('/api/movies', movieRouter);
 app.use('/api/playback', playbackRouter);
+app.use('/api/favorites', favoriteRouter);
+app.use('/api/ratings', ratingRouter);
 
 // Swagger UI (serve openapi.yaml if present)
 try {
