@@ -52,9 +52,9 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 // --- Rutas principales ---
-app.use('/auth', authRouter);
-app.use('/api/auth', passwordRouter); // ✅ montado correctamente
-app.use('/users', userRouter);
+app.use('/api/auth', authRouter);        // ✅ para register, login, logout
+app.use('/api/password', passwordRouter); // ✅ para forgot-password, reset-password
+app.use('/api/users', userRouter);
 app.use('/api/movies', movieRouter);
 app.use('/api/playback', playbackRouter);
 
