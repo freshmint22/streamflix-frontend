@@ -1,4 +1,3 @@
-
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import path from 'path';
@@ -10,6 +9,7 @@ import authRouter from './routes/auth.routes';
 import userRouter from './routes/user.routes';
 import movieRouter from './routes/movie.routes';
 import playbackRouter from './routes/playback.routes';
+import passwordRouter from './routes/password.routes'; // ✅ nombre corregido
 import jwt from 'jsonwebtoken';
 import { isTokenBlacklisted } from './lib/tokenBlacklist';
 
@@ -95,24 +95,19 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-// --- Auth routes (real implementation) ---
-app.use('/auth', authRouter);
-// Mount user routes
-app.use('/users', userRouter);
-// Movies REST API (persistent)
+// --- Rutas principales ---
+app.use('/api/auth', authRouter);        // ✅ para register, login, logout
+app.use('/api/password', passwordRouter); // ✅ para forgot-password, reset-password
+app.use('/api/users', userRouter);
 app.use('/api/movies', movieRouter);
-// Playback endpoints
 app.use('/api/playback', playbackRouter);
 
 // Swagger UI (serve openapi.yaml if present)
-try{
+try {
   const doc = YAML.load(path.join(__dirname, '..', 'openapi.yaml'));
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(doc));
-}catch(err){ /* ignore if not present */ }
-
-// --- Users: Get profile (MOCK, protegido) ---
-// NOTE: User routes are mounted from `user.routes` and are protected there with requireAuth
-// NOTE: Frontend assets are maintained in a separate project. Movie REST endpoints are exposed under /api/movies
-  
+} catch (err) {
+  /* ignore if not present */
+}
 
 export default app;
