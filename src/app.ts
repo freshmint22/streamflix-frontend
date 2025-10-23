@@ -20,7 +20,44 @@ const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
   .split(",")
   .map((s) => s.trim());
 
-app.use(cors({ origin: corsOrigins, credentials: true }));
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // allow requests with no origin (e.g., curl, server-to-server)
+    if (!origin) {
+      console.log('[CORS] no origin (server or curl) - allow');
+      return callback(null, true);
+    }
+
+    // support wildcard '*' in CORS_ORIGIN to allow any origin (use carefully)
+    if (corsOrigins.includes('*')) {
+      console.log('[CORS] wildcard * configured - allow origin=', origin);
+      return callback(null, true);
+    }
+
+    // normalize origin casing before comparison
+    const normalized = origin.toLowerCase();
+    const allowed = corsOrigins.some((o) => o.toLowerCase() === normalized);
+
+    console.log('[CORS] origin=', origin, 'allowed=', allowed, 'allowedList=', corsOrigins);
+    if (allowed) return callback(null, true);
+    // Deny the origin without throwing an exception - return false so cors middleware
+    // will not set Access-Control-Allow-Origin. Throwing an Error here causes the
+    // request to error out before CORS headers are applied (observed as no header).
+    console.warn('[CORS] denying origin=', origin);
+    return callback(null, false);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions as any));
+
+// NOTE: cors middleware will handle OPTIONS preflight automatically.
+// Avoid registering a literal '*' route here because some path-to-regexp
+// versions throw when parsing a bare '*' pattern.
+
 app.use(express.json());
 
 // Security headers
@@ -40,7 +77,14 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
   const auth = req.headers.authorization || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   const secret = process.env.JWT_SECRET || 'dev_secret_change_me';
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  if (!token) {
+    // In production, require token. In development allow a mock user so UI flows
+    // (profile, edit) can be tested without a real login flow.
+    if (process.env.NODE_ENV === 'production') return res.status(401).json({ error: 'Unauthorized' });
+    console.warn('[AUTH] no token provided — attaching mock dev user');
+    (req as any).userId = 'dev_mock_user';
+    return next();
+  }
   if (isTokenBlacklisted(token)) return res.status(401).json({ error: 'Token revoked' });
   try {
     const payload = jwt.verify(token, secret) as any;

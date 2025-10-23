@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, logout, forgotPassword, resetPassword } from '../controllers/auth.controller';
+import { register, login, logout, forgotPassword, resetPassword, demoLogin } from '../controllers/auth.controller';
 import { validateBody, registerSchema, loginSchema } from '../middleware/validation';
 
 const router = Router();
@@ -9,6 +9,9 @@ router.post('/register', validateBody(registerSchema), register);
 
 // POST /auth/login
 router.post('/login', validateBody(loginSchema), login);
+
+// POST /auth/demo-login (optional dev helper)
+router.post('/demo-login', demoLogin);
 
 // DELETE /auth/logout
 router.delete('/logout', logout);
