@@ -10,7 +10,7 @@ import userRouter from './routes/user.routes';
 import movieRouter from './routes/movie.routes';
 import playbackRouter from './routes/playback.routes';
 import favoriteRouter from './routes/favorite.routes';
-import videoRouter from './routes/video.routes';
+import passwordRouter from './routes/password.routes';
 import jwt from 'jsonwebtoken';
 import { isTokenBlacklisted } from './lib/tokenBlacklist';
 
@@ -113,8 +113,6 @@ app.use('/api/movies', movieRouter);
 app.use('/api/playback', playbackRouter);
 // Favorites endpoints
 app.use('/api/favorites', favoriteRouter);
-// Video search (Pexels proxy)
-app.use('/api/videos', videoRouter);
 
 // Swagger UI (serve openapi.yaml if present)
 try {
