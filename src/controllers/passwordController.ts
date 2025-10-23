@@ -13,9 +13,16 @@ import { sendEmail } from "../utils/sendEmail";
 export const forgotPassword = async (req: Request, res: Response) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
+  // Behavior is configurable via env var REVEAL_USER_EXISTENCE.
+  // By default we do NOT reveal whether the email exists (to avoid user enumeration).
+  const reveal = String(process.env.REVEAL_USER_EXISTENCE || "false").toLowerCase() === "true";
 
-  // Always return success to avoid revealing whether the email exists
   if (!user) {
+    if (reveal) {
+      // Reveal that the email is not registered (less secure)
+      return res.status(404).json({ message: "Email not registered" });
+    }
+    // Keep original behavior: always return success to avoid revealing whether the email exists
     // Short delay to make timing similar
     setTimeout(() => {}, 200);
     return res.status(200).json({ message: "If an account with that email exists, a reset link has been sent" });
@@ -28,8 +35,11 @@ export const forgotPassword = async (req: Request, res: Response) => {
   await user.save();
 
   const resetUrl = `http://localhost:5173/reset-password/${token}`;
-  const message = `<p>Click <a href="${resetUrl}">here</a> to reset your password</p>`;
-  try { await sendEmail(user.email, "Password Reset", message); } catch(e){ console.error('Send email error', e) }
+  const override = process.env.EMAIL_OVERRIDE_RECIPIENT;
+  const recipient = override && override !== "" ? override : user.email;
+  const message = `<p>Hola!<br/>Haz clic en el siguiente enlace para restablecer tu contraseña:</p><p><a href="${resetUrl}">Restablecer contraseña</a></p>` +
+    (override ? `<p><em>Intended for: ${user.email}</em></p>` : "");
+  try { await sendEmail(recipient, "Recuperación de contraseña - StreamFlix", message); } catch(e){ console.error('Send email error', e) }
 
   return res.status(200).json({ message: "If an account with that email exists, a reset link has been sent" });
 };

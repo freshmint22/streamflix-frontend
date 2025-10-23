@@ -1,4 +1,3 @@
-
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import path from 'path';
@@ -106,13 +105,11 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-// --- Auth routes (real implementation) ---
-app.use('/auth', authRouter);
-// Mount user routes
-app.use('/users', userRouter);
-// Movies REST API (persistent)
+// --- Rutas principales ---
+app.use('/api/auth', authRouter);        // ✅ para register, login, logout
+app.use('/api/password', passwordRouter); // ✅ para forgot-password, reset-password
+app.use('/api/users', userRouter);
 app.use('/api/movies', movieRouter);
-// Playback endpoints
 app.use('/api/playback', playbackRouter);
 // Favorites endpoints
 app.use('/api/favorites', favoriteRouter);
@@ -120,7 +117,7 @@ app.use('/api/favorites', favoriteRouter);
 app.use('/api/videos', videoRouter);
 
 // Swagger UI (serve openapi.yaml if present)
-try{
+try {
   const doc = YAML.load(path.join(__dirname, '..', 'openapi.yaml'));
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(doc));
 }catch(err){ /* ignore if not present */ }

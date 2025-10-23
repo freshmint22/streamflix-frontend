@@ -32,7 +32,7 @@ export async function register(req: Request, res: Response) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-  const name = `${firstName}${lastName ? ' ' + lastName : ''}`.trim();
+    const name = `${firstName}${lastName ? ' ' + lastName : ''}`.trim();
 
     // Check duplicate email
     const existing = await User.findOne({ email: email.toLowerCase().trim() }).exec();
@@ -46,7 +46,11 @@ export async function register(req: Request, res: Response) {
       lastName,
       age,
     });
-    await user.save();
+
+    // 🔍 Debug info
+    console.log('📩 Creating user:', user);
+
+    await user.save(); // <-- Si hay un error aquí, lo veremos abajo
 
     const token = jwt.sign({ sub: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
@@ -63,8 +67,14 @@ export async function register(req: Request, res: Response) {
 
     return res.status(201).json({ token, user: userSafe });
   } catch (err: any) {
-    console.error('Register error:', err?.message || err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Register full error:', err);
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({
+        error: 'Validation error',
+        details: Object.values(err.errors).map((e: any) => e.message),
+      });
+    }
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }
 
@@ -73,10 +83,6 @@ export async function register(req: Request, res: Response) {
  *
  * POST /auth/login
  * Body: { email, password }
- *
- * Responses:
- *  - 200: { token, user }
- *  - 401: invalid credentials
  */
 export async function login(req: Request, res: Response) {
   try {
@@ -101,8 +107,8 @@ export async function login(req: Request, res: Response) {
 
     return res.json({ token, user: userSafe });
   } catch (err: any) {
-    console.error('Login error:', err?.message || err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('Login error:', err);
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }
 
@@ -110,10 +116,6 @@ export async function login(req: Request, res: Response) {
  * Log out the current user by blacklisting the provided JWT.
  *
  * DELETE /auth/logout
- * Authorization: Bearer <token>
- *
- * This adds the token to an in-memory blacklist. In production a persistent
- * store (Redis) is recommended to survive restarts.
  */
 export async function logout(req: Request, res: Response) {
   try {
@@ -123,8 +125,8 @@ export async function logout(req: Request, res: Response) {
     addTokenToBlacklist(token);
     return res.json({ message: 'Logged out' });
   } catch (err: any) {
-    console.error('Logout error:', err?.message || err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('Logout error:', err);
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }
 

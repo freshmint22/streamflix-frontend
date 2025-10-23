@@ -13,7 +13,7 @@ paths:
     get:
       summary: Health check
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -31,16 +31,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRegister'
+              $ref: "#/components/schemas/UserRegister"
       responses:
-        '201':
+        "201":
           description: Created — returns token and user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
   /auth/login:
     post:
       summary: Login
@@ -49,28 +49,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserLogin'
+              $ref: "#/components/schemas/UserLogin"
       responses:
-        '200':
+        "200":
           description: OK — returns token and user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /auth/logout:
     post:
       summary: Logout (invalidate JWT)
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Logged out
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'
+                $ref: "#/components/schemas/Message"
   /auth/forgot:
     post:
       summary: Start password recovery — sends reset email with token
@@ -85,12 +85,12 @@ paths:
                   type: string
                   format: email
       responses:
-        '200':
+        "200":
           description: Email sent (even if email not found, to avoid user enumeration)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'
+                $ref: "#/components/schemas/Message"
   /auth/reset:
     post:
       summary: Reset password using token from email
@@ -106,26 +106,26 @@ paths:
                 newPassword:
                   type: string
       responses:
-        '200':
+        "200":
           description: Password reset successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                $ref: "#/components/schemas/Message"
+        "400":
+          $ref: "#/components/responses/BadRequest"
   /users/me:
     get:
       summary: Get current user profile
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: User profile
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserPublic'
+                $ref: "#/components/schemas/UserPublic"
     put:
       summary: Update current user profile
       security:
@@ -135,38 +135,38 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserUpdate'
+              $ref: "#/components/schemas/UserUpdate"
       responses:
-        '200':
+        "200":
           description: Updated user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserPublic'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                $ref: "#/components/schemas/UserPublic"
+        "400":
+          $ref: "#/components/responses/BadRequest"
     delete:
       summary: Delete current user account
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Account deleted
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'
+                $ref: "#/components/schemas/Message"
   /api/movies:
     get:
       summary: List movies (supports paging, search, sorting)
       parameters:
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/q'
-        - $ref: '#/components/parameters/sortBy'
-        - $ref: '#/components/parameters/order'
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/q"
+        - $ref: "#/components/parameters/sortBy"
+        - $ref: "#/components/parameters/order"
       responses:
-        '200':
+        "200":
           description: Paginated list of movies
           content:
             application/json:
@@ -185,7 +185,7 @@ paths:
                   items:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Movie'
+                      $ref: "#/components/schemas/Movie"
     post:
       summary: Create a movie (admin only)
       security:
@@ -195,14 +195,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MovieCreate'
+              $ref: "#/components/schemas/MovieCreate"
       responses:
-        '201':
+        "201":
           description: Movie created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Movie'
+                $ref: "#/components/schemas/Movie"
   /api/movies/{movieId}:
     get:
       summary: Get a movie by ID
@@ -213,14 +213,14 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Movie found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Movie'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/Movie"
+        "404":
+          $ref: "#/components/responses/NotFound"
     put:
       summary: Update a movie (admin only)
       security:
@@ -236,14 +236,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MovieCreate'
+              $ref: "#/components/schemas/MovieCreate"
       responses:
-        '200':
+        "200":
           description: Movie updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Movie'
+                $ref: "#/components/schemas/Movie"
     delete:
       summary: Delete a movie (admin only)
       security:
@@ -255,7 +255,7 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        "204":
           description: Movie deleted (no content)
   /playback/start:
     post:
@@ -275,12 +275,12 @@ paths:
                   type: number
                   description: Seconds into the movie
       responses:
-        '200':
+        "200":
           description: Playback recorded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlaybackState'
+                $ref: "#/components/schemas/PlaybackState"
   /playback/pause:
     post:
       summary: Pause playback and record position
@@ -298,12 +298,12 @@ paths:
                 position:
                   type: number
       responses:
-        '200':
+        "200":
           description: Playback paused
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlaybackState'
+                $ref: "#/components/schemas/PlaybackState"
   /playback/stop:
     post:
       summary: Stop playback and record final position
@@ -321,12 +321,12 @@ paths:
                 position:
                   type: number
       responses:
-        '200':
+        "200":
           description: Playback stopped
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlaybackState'
+                $ref: "#/components/schemas/PlaybackState"
   /playback/{userId}:
     get:
       summary: Get latest playback states for a user
@@ -337,14 +337,60 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Array of playback states
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PlaybackState'
+                  $ref: "#/components/schemas/PlaybackState"
+  /api/favorites:
+    get:
+      summary: List my favorites
+      security: [{ bearerAuth: [] }]
+      responses: { "200": { description: "OK" } }
+    post:
+      summary: Add to favorites
+      security: [{ bearerAuth: [] }]
+      requestBody: { ... movieId ... }
+      responses: { "201": { description: "Created" } }
+
+  /api/favorites/{movieId}:
+    delete:
+      summary: Remove from favorites
+      security: [{ bearerAuth: [] }]
+      parameters:
+        [{ name: movieId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: "OK" } }
+
+  /api/ratings:
+    post:
+      summary: Upsert my rating
+      security: [{ bearerAuth: [] }]
+      requestBody: { ... movieId, rating ... }
+      responses: { "200": { description: "Saved" } }
+
+  /api/ratings/me/{movieId}:
+    get:
+      summary: Get my rating for a movie
+      security: [{ bearerAuth: [] }]
+      parameters:
+        [{ name: movieId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: "OK" } }
+    delete:
+      summary: Delete my rating for a movie
+      security: [{ bearerAuth: [] }]
+      parameters:
+        [{ name: movieId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: "OK" } }
+
+  /api/ratings/stats/{movieId}:
+    get:
+      summary: Get rating statistics for a movie
+      parameters:
+        [{ name: movieId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: "OK" } }
 components:
   securitySchemes:
     bearerAuth:
@@ -413,7 +459,7 @@ components:
         token:
           type: string
         user:
-          $ref: '#/components/schemas/UserPublic'
+          $ref: "#/components/schemas/UserPublic"
     Movie:
       type: object
       properties:
@@ -519,18 +565,18 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Message'
+            $ref: "#/components/schemas/Message"
     Unauthorized:
       description: Unauthorized
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Message'
+            $ref: "#/components/schemas/Message"
     NotFound:
       description: Not Found
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Message'
+            $ref: "#/components/schemas/Message"
 security:
   - bearerAuth: []
