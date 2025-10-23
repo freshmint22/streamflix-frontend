@@ -1,11 +1,17 @@
 // src/pages/Home.tsx
 import { useEffect, useState } from "react";
 import { getMovies, type Movie } from "../services/movies";
+import MovieCard from "../components/MovieCard";
+import Player from "../components/Player";
 
+/**
+ * Home page - lists movies and allows playing them using Player component.
+ */
 export default function Home() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [playingMovie, setPlayingMovie] = useState<any | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -36,15 +42,30 @@ export default function Home() {
       </p>
 
       {movies.length > 0 ? (
-        <ul style={styles.list}>
-          {movies.map((m) => (
-            <li key={m.id} style={styles.item}>
-              🎬 <strong>{m.title}</strong> {m.year && `(${m.year})`}
-            </li>
-          ))}
-        </ul>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>
+          {movies.map((m) => {
+            const mm = m as any;
+            return (
+              <MovieCard
+                key={mm._id || mm.id}
+                id={mm._id || mm.id}
+                title={mm.title}
+                year={mm.releaseYear || mm.year}
+                poster={mm.thumbnailUrl || mm.posterUrl}
+                videoUrl={mm.videoUrl}
+                onPlay={(payload: any) => setPlayingMovie(payload)}
+              />
+            );
+          })}
+        </div>
       ) : (
-        <p>No hay películas disponibles.</p>
+        <p>No movies available.</p>
+      )}
+
+      {playingMovie && (
+        <div style={{ marginTop: 20 }}>
+          <Player movieId={playingMovie.id} videoUrl={playingMovie.videoUrl} onClose={() => setPlayingMovie(null)} />
+        </div>
       )}
 
       <div style={styles.panel}>

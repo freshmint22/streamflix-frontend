@@ -13,8 +13,10 @@ type Form = {
 
 /**
  * Register page component.
- * Allows users to create a new account by providing name, age, email and password.
- * Performs client-side validation and calls the users service to register.
+ *
+ * Allows users to create a new account by providing first name, last name, age, email and password.
+ * Performs client-side validation and calls the users service to register the account on the server.
+ * Documentation: JSDoc in English for consistency across the project.
  */
 export default function Register() {
   const navigate = useNavigate();

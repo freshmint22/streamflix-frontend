@@ -1,7 +1,9 @@
 /**
  * Login page component.
+ *
  * Renders a form to authenticate users with email and password.
  * On success stores the JWT token in localStorage under `sf_token` and navigates to /home.
+ * JSDoc and comments standardized in English.
  */
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";

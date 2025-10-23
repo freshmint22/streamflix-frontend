@@ -6,6 +6,8 @@ import ForgotPassword from "../pages/ForgotPassword";
 import Home from "../pages/Home";
 import Profile from "../pages/Profile";
 import About from "../pages/About";
+import Favorites from "../pages/Favorites";
+import Sitemap from "../pages/Sitemap";
 import ProtectedRoute from "./ProtectedRoute";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -58,6 +60,25 @@ export default function AppRoutes() {
               <Profile />
             </LayoutWithNav>
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/favorites"
+        element={
+          <ProtectedRoute>
+            <LayoutWithNav>
+              <Favorites />
+            </LayoutWithNav>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/sitemap"
+        element={
+          <LayoutWithNav>
+            <Sitemap />
+          </LayoutWithNav>
         }
       />
     </Routes>

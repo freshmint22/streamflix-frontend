@@ -14,8 +14,10 @@ type User = {
 
 /**
  * Profile page component.
+ *
  * Fetches the authenticated user's profile, allows editing fields, changing password
  * (via PUT) and account deletion (DELETE). Handles 401 by redirecting to login.
+ * All inline documentation is provided in English for consistency.
  */
 export default function Profile() {
   const navigate = useNavigate();
