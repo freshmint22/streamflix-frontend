@@ -19,7 +19,7 @@ export default function MovieCard({ id, title, year, poster, videoUrl, isFavorit
   async function handleAdd() {
     try {
       setBusy(true);
-      await favSvc.addFavorite(id);
+      await favSvc.addFavorite({ id, title, posterUrl: poster, year, videoUrl });
       setFav(true);
     } catch (e) {
       console.error("Add favorite error", e);
