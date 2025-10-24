@@ -21,10 +21,10 @@ export async function getMovies(): Promise<Movie[]> {
   if (!r.ok) throw new Error("Failed to fetch movies");
   const data = await r.json();
   const sampleVideos = [
-    "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
-    "https://storage.googleapis.com/coverr-main/mp4/Northern_Lights.mp4",
-    "https://storage.googleapis.com/coverr-main/mp4/Footvolley.mp4",
-    "https://storage.googleapis.com/coverr-main/mp4/La_Pedrera.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
   ];
   return (Array.isArray(data) ? data : []).map((item: any, index: number) => ({
     id: String(item.id),

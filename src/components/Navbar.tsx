@@ -102,6 +102,15 @@ export default function Navbar() {
             {/* overlay closes when clicking outside or pressing Escape */}
             <NavLink to="/home" onClick={() => setMobileOpen(false)} className={({ isActive }) => (isActive ? 'sf-navbar__link active' : 'sf-navbar__link')}>Home</NavLink>
             <NavLink to="/about" onClick={() => setMobileOpen(false)} className={({ isActive }) => (isActive ? 'sf-navbar__link active' : 'sf-navbar__link')}>Sobre nosotros</NavLink>
+            {isAuthed && (
+              <NavLink
+                to="/favorites"
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) => (isActive ? 'sf-navbar__link active' : 'sf-navbar__link')}
+              >
+                Favoritos
+              </NavLink>
+            )}
 
             <div className="sf-navbar__mobile-section">
               <h3>Opciones</h3>
