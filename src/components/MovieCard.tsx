@@ -2,7 +2,15 @@ import { useState } from "react";
 import type { CSSProperties } from "react";
 import favSvc from "../services/favorites";
 
-type PlayPayload = { id: string; title: string; videoUrl?: string };
+type PlayPayload = {
+  id: string;
+  title: string;
+  poster: string;
+  year?: number;
+  videoUrl?: string;
+  overview?: string;
+  rating?: number;
+};
 
 type MovieCardProps = {
   id: string;
@@ -10,19 +18,32 @@ type MovieCardProps = {
   year?: number;
   poster?: string;
   videoUrl?: string;
+  overview?: string;
+  rating?: number;
   isFavorited?: boolean;
   onPlay?: (payload: PlayPayload) => void;
   onFavoriteRemoved?: (movieId: string) => void;
 };
 
-export default function MovieCard({ id, title, year, poster = "", videoUrl, isFavorited = false, onPlay, onFavoriteRemoved }: MovieCardProps) {
+export default function MovieCard({
+  id,
+  title,
+  year,
+  poster = "",
+  videoUrl,
+  overview,
+  rating,
+  isFavorited = false,
+  onPlay,
+  onFavoriteRemoved,
+}: MovieCardProps) {
   const [fav, setFav] = useState<boolean>(isFavorited);
   const [busy, setBusy] = useState(false);
 
   async function handleAdd() {
     try {
       setBusy(true);
-      await favSvc.addFavorite({ id, title, posterUrl: poster, year, videoUrl });
+      await favSvc.addFavorite({ id, title, posterUrl: poster, year, videoUrl, overview, rating });
       setFav(true);
     } catch (e) {
       console.error("Add favorite error", e);
@@ -49,6 +70,16 @@ export default function MovieCard({ id, title, year, poster = "", videoUrl, isFa
   const canPlay = Boolean(videoUrl);
   const playLabel = canPlay ? "Ver trailer" : "Sin video";
 
+  const payload: PlayPayload = {
+    id,
+    title,
+    poster,
+    year,
+    videoUrl,
+    overview,
+    rating,
+  };
+
   return (
     <div style={styles.card}>
       <div
@@ -70,7 +101,7 @@ export default function MovieCard({ id, title, year, poster = "", videoUrl, isFa
               opacity: canPlay ? 1 : 0.55,
               cursor: canPlay ? "pointer" : "not-allowed",
             }}
-            onClick={() => canPlay && onPlay && onPlay({ id, title, videoUrl })}
+            onClick={() => canPlay && onPlay && onPlay(payload)}
             disabled={!canPlay}
             aria-label={`Play ${title}`}
           >

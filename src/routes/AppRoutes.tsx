@@ -8,6 +8,7 @@ import Profile from "../pages/Profile";
 import About from "../pages/About";
 import Favorites from "../pages/Favorites";
 import Sitemap from "../pages/Sitemap";
+import Trailer from "../pages/Trailer";
 import ProtectedRoute from "./ProtectedRoute";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -68,6 +69,16 @@ export default function AppRoutes() {
           <ProtectedRoute>
             <LayoutWithNav>
               <Favorites />
+            </LayoutWithNav>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/trailer/:id"
+        element={
+          <ProtectedRoute>
+            <LayoutWithNav>
+              <Trailer />
             </LayoutWithNav>
           </ProtectedRoute>
         }

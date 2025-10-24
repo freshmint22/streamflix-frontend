@@ -2,7 +2,7 @@
  * Sitemap page - visual list of main routes for users and crawlers.
  */
 export default function Sitemap() {
-  const routes = ["/", "/home", "/about", "/login", "/register", "/profile", "/favorites", "/sitemap"];
+  const routes = ["/", "/home", "/about", "/login", "/register", "/profile", "/favorites", "/trailer/:id", "/sitemap"];
   return (
     <div style={{ maxWidth: 900, margin: "10px auto" }}>
       <h1>Sitemap</h1>

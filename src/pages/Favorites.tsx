@@ -1,9 +1,17 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { useNavigate } from "react-router-dom";
 import { getFavorites, type FavoriteItem } from "../services/favorites";
 import MovieCard from "../components/MovieCard";
-import Player from "../components/Player";
 
-type PlayState = { id: string; title: string; videoUrl?: string };
+type PlayState = {
+  id: string;
+  title: string;
+  videoUrl?: string;
+  poster?: string;
+  year?: number;
+  overview?: string;
+  rating?: number;
+};
 
 const posterFallback = "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
 
@@ -11,7 +19,7 @@ export default function Favorites() {
   const [items, setItems] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [playing, setPlaying] = useState<PlayState | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -29,9 +37,10 @@ export default function Favorites() {
 
   const handleRemoved = (movieId: string) => {
     setItems((prev) => prev.filter((fav) => fav.movieId !== movieId && fav._id !== movieId));
-    if (playing?.id === movieId) {
-      setPlaying(null);
-    }
+  };
+
+  const handlePlay = (payload: PlayState) => {
+    navigate(`/trailer/${payload.id}`, { state: { movie: payload } });
   };
 
   if (loading) {
@@ -70,17 +79,15 @@ export default function Favorites() {
                 year={fav.movie?.year}
                 poster={fav.movie?.posterUrl || posterFallback}
                 videoUrl={fav.movie?.videoUrl}
+                overview={fav.movie?.overview}
+                rating={fav.movie?.rating}
                 isFavorited
-                onPlay={(payload: PlayState) => setPlaying(payload)}
+                onPlay={handlePlay}
                 onFavoriteRemoved={handleRemoved}
               />
             );
           })}
         </div>
-      )}
-
-      {playing && (
-        <Player movieId={playing.id} videoUrl={playing.videoUrl || ""} onClose={() => setPlaying(null)} />
       )}
     </div>
   );
