@@ -33,9 +33,14 @@ async function start() {
         }
       }
     }
-    const server = app.listen(Number(PORT), () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
+    const host = process.env.HOST;
+    const server = host
+      ? app.listen(Number(PORT), host, () => {
+          console.log(`🚀 Server running on port ${PORT} bound to ${host}`);
+        })
+      : app.listen(Number(PORT), () => {
+          console.log(`🚀 Server running on port ${PORT}`);
+        });
 
     server.on('error', (err) => {
       console.error('❌ Server error:', err && (err as any).message ? (err as any).message : err);
