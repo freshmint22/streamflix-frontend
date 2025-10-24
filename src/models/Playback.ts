@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
  */
 export interface IPlayback extends mongoose.Document {
   userId: mongoose.Types.ObjectId;
-  movieId: mongoose.Types.ObjectId;
+  movieId: string;
   position: number;
   state: 'playing' | 'paused' | 'stopped';
 }
@@ -15,7 +15,7 @@ export interface IPlayback extends mongoose.Document {
  */
 const playbackSchema = new mongoose.Schema<IPlayback>({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  movieId: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie', required: true },
+  movieId: { type: String, required: true },
   position: { type: Number, default: 0 },
   state: { type: String, enum: ['playing', 'paused', 'stopped'], default: 'stopped' },
 }, { timestamps: true });

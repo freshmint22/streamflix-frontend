@@ -10,6 +10,8 @@ export interface FavoriteMovieMeta {
   posterUrl?: string;
   year?: number;
   videoUrl?: string;
+  overview?: string;
+  rating?: number;
 }
 
 /**
@@ -42,6 +44,8 @@ const favoriteSchema = new mongoose.Schema<IFavorite, IFavoriteModel>({
     posterUrl: String,
     year: Number,
     videoUrl: String,
+    overview: String,
+    rating: Number,
   },
   note: { type: String, default: undefined },
 }, { timestamps: true });
