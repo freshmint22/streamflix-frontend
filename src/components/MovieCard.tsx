@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
-import { addFavorite, removeFavorite } from "../services/favorites";
+import favSvc from "../services/favorites";
 
 /**
  * MovieCard
@@ -19,7 +19,7 @@ export default function MovieCard({ id, title, year, poster, videoUrl, isFavorit
   async function handleAdd() {
     try {
       setBusy(true);
-      await addFavorite(id);
+      await favSvc.addFavorite(id);
       setFav(true);
     } catch (e) {
       console.error("Add favorite error", e);
@@ -29,17 +29,18 @@ export default function MovieCard({ id, title, year, poster, videoUrl, isFavorit
 
   async function handleRemove() {
     try {
-      setBusy(true);
-      // The backend returns the favorite id; client may need to know it.
-      // For simplicity call removeFavorite with movie id path (assumes API supports /api/favorites/:id where :id can be favorite id).
-      // Here we call a convenience endpoint that removes by movieId if implemented server-side; if not, this will need adjustment.
-      await removeFavorite(id);
+  setBusy(true);
+  // The backend returns the favorite id; client may need to know it.
+  // For simplicity call removeFavorite with movie id path (service will try deletion by id then fallback to movieId lookup).
+  await favSvc.removeFavorite(id);
       setFav(false);
     } catch (e) {
       console.error("Remove favorite error", e);
       alert("Failed to remove favorite");
     } finally { setBusy(false); }
   }
+
+  const canPlay = Boolean(videoUrl);
 
   return (
     <div style={styles.card}>
@@ -52,10 +53,11 @@ export default function MovieCard({ id, title, year, poster, videoUrl, isFavorit
       <div style={{ display: "flex", gap: 8, padding: 12 }}>
         <button
           style={styles.btn}
-          onClick={() => onPlay && onPlay({ id, title, videoUrl })}
+          onClick={() => canPlay && onPlay && onPlay({ id, title, videoUrl })}
+          disabled={!canPlay}
           aria-label={`Play ${title}`}
         >
-          Play
+          {canPlay ? "Play" : "No video"}
         </button>
 
         {!fav ? (

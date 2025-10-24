@@ -1,8 +1,7 @@
 // src/pages/Profile.tsx
 import { useEffect, useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_BASE as string;
+import { getMe, updateMe, deleteMe } from "../services/users";
 
 type User = {
   firstName: string;
@@ -28,43 +27,24 @@ export default function Profile() {
   const [loadingPage, setLoadingPage] = useState(true);
   const [error, setError] = useState("");
 
-  // Helper para cabeceras con token
-  const authHeaders = () => {
-    const token = localStorage.getItem("sf_token") || "";
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-  };
-
-  // Manejo de 401: limpiar y mandar a login
-  const handle401 = () => {
-    localStorage.removeItem("sf_token");
-    navigate("/login");
-  };
-
-  // Cargar perfil al montar
+  // Load profile on mount using service helper
   useEffect(() => {
     (async () => {
       try {
         setLoadingPage(true);
         setError("");
-        const res = await fetch(`${API_BASE}/users/me`, { headers: authHeaders() });
-        if (res.status === 401) return handle401();
-  if (!res.ok) throw new Error("Error al cargar el perfil");
-        const data = (await res.json()) as Partial<User>;
-        // Normaliza los campos mínimos esperados
+        const data = await getMe();
         const normalized: User = {
-          firstName: data.firstName ?? "User",
-          lastName: data.lastName ?? "",
-          age: data.age,
-          email: data.email ?? "",
-          createdAt: data.createdAt,
+          firstName: (data as any).firstName ?? "User",
+          lastName: (data as any).lastName ?? "",
+          age: (data as any).age,
+          email: (data as any).email ?? "",
+          createdAt: (data as any).createdAt,
         };
         setUser(normalized);
         setForm(normalized);
       } catch (e: any) {
-        setError(e?.message || "Error inesperado");
+        setError(e?.message || "Unexpected error");
       } finally {
         setLoadingPage(false);
       }
@@ -76,46 +56,34 @@ export default function Profile() {
     try {
       setLoading(true);
       setError("");
-      const res = await fetch(`${API_BASE}/users/me`, {
-        method: "PUT",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          age: form.age,
-          email: form.email,
-        }),
+      const updated = await updateMe({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        age: form.age,
+        email: form.email,
       });
-      if (res.status === 401) return handle401();
-  if (!res.ok) throw new Error("Error al actualizar");
-      const updated = (await res.json()) as User;
-      setUser(updated);
-      setForm(updated);
+      setUser(updated as any);
+      setForm(updated as any);
       setEditing(false);
     } catch (e: any) {
-      setError(e?.message || "Error inesperado");
+      setError(e?.message || "Unexpected error");
     } finally {
       setLoading(false);
     }
   };
 
   const onDelete = async () => {
-  const ok = confirm("¿Estás seguro de que quieres eliminar tu cuenta? Esto no se puede deshacer.");
+    const ok = confirm("Are you sure you want to delete your account? This cannot be undone.");
     if (!ok) return;
     try {
       setLoading(true);
       setError("");
-      const res = await fetch(`${API_BASE}/users/me`, {
-        method: "DELETE",
-        headers: authHeaders(),
-      });
-      if (res.status === 401) return handle401();
-  if (!res.ok) throw new Error("Error al eliminar");
+      await deleteMe();
       // logout + redirect
       localStorage.removeItem("sf_token");
       navigate("/login");
     } catch (e: any) {
-      setError(e?.message || "Error inesperado");
+      setError(e?.message || "Unexpected error");
     } finally {
       setLoading(false);
     }

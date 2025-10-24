@@ -21,7 +21,7 @@ export default function Player({ videoUrl, movieId, onClose }: any) {
 
   async function postPlayback(path: string, pos = 0) {
     try {
-      await fetch(`${API_BASE}/api/playback/${path}`, {
+  await fetch(`${API_BASE}/playback/${path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("sf_token") || ""}` },
         body: JSON.stringify({ movieId, position: pos }),

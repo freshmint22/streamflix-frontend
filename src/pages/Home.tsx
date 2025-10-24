@@ -12,6 +12,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [playingMovie, setPlayingMovie] = useState<any | null>(null);
+  const posterFallback = "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
 
   useEffect(() => {
     (async () => {
@@ -25,7 +26,6 @@ export default function Home() {
       }
     })();
   }, []);
-
   if (loading) return <p style={{ textAlign: "center" }}>Cargando películas...</p>;
   if (error)
     return (
@@ -51,7 +51,7 @@ export default function Home() {
                 id={mm._id || mm.id}
                 title={mm.title}
                 year={mm.releaseYear || mm.year}
-                poster={mm.thumbnailUrl || mm.posterUrl}
+                poster={mm.thumbnailUrl || mm.posterUrl || posterFallback}
                 videoUrl={mm.videoUrl}
                 onPlay={(payload: any) => setPlayingMovie(payload)}
               />
@@ -67,7 +67,6 @@ export default function Home() {
           <Player movieId={playingMovie.id} videoUrl={playingMovie.videoUrl} onClose={() => setPlayingMovie(null)} />
         </div>
       )}
-
       <div style={styles.panel}>
         <h3 style={{ margin: "0 0 8px" }}>¿Qué viene en el Sprint 2?</h3>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
@@ -88,13 +87,5 @@ const styles = {
     border: "1px solid rgba(255,255,255,0.04)",
     borderRadius: 12,
     background: "var(--panel)",
-  },
-  list: { listStyle: "none", padding: 0, marginTop: 16 },
-  item: {
-    background: "var(--panel)",
-    border: "1px solid rgba(255,255,255,0.04)",
-    borderRadius: 8,
-    padding: "10px 12px",
-    marginBottom: 8,
   },
 };

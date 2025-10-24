@@ -9,7 +9,8 @@ const rawBase = import.meta.env.VITE_API_BASE as string | undefined;
  * @example
  * import { API_BASE } from './api';
  */
-export const API_BASE = rawBase && rawBase !== "" ? rawBase : "http://localhost:5000";
+const base = rawBase && rawBase !== "" ? rawBase : "http://localhost:5000";
+export const API_BASE = `${base.replace(/\/$/, "")}/api`;
 
 if (!rawBase) {
   console.warn(

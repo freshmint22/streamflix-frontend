@@ -105,7 +105,8 @@ export async function register(data: RegisterPayload) {
  */
 /** POST /auth/forgot-password */
 export async function recover(email: string) {
-  const r = await fetch(`${API_BASE}/auth/forgot-password`, {
+  // The backend expone la recuperación bajo /password/forgot-password cuando API_BASE ya termina en /api.
+  const r = await fetch(`${API_BASE}/password/forgot-password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
