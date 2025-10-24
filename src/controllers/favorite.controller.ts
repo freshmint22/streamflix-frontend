@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import Favorite from '../models/Favorite';
+import Favorite, { FavoriteMovieMeta } from '../models/Favorite';
 
 /**
  * Create a new favorite for the authenticated user.
@@ -12,9 +12,14 @@ import Favorite from '../models/Favorite';
 export async function createFavorite(req: Request, res: Response) {
   try {
     const userId = (req as any).userId;
-    const { movieId, note } = req.body || {};
+    const { movieId, movie, note } = (req.body || {}) as { movieId?: string; movie?: FavoriteMovieMeta; note?: string };
     if (!movieId) return res.status(400).json({ error: 'movieId required' });
-    const fav = new Favorite({ userId, movieId, note });
+
+    // Avoid duplicates per user/movie pair
+    const existing = await Favorite.findOne({ userId, movieId }).exec();
+    if (existing) return res.status(200).json(existing);
+
+    const fav = new Favorite({ userId, movieId, movie, note });
     await fav.save();
     return res.status(201).json(fav);
   } catch (err: any) { console.error(err); return res.status(500).json({ error: 'Internal server error' }) }
@@ -34,7 +39,7 @@ export async function createFavorite(req: Request, res: Response) {
 export async function listFavorites(req: Request, res: Response) {
   try {
     const userId = (req as any).userId;
-    const items = await Favorite.find({ userId }).populate('movieId').sort({ createdAt: -1 }).exec();
+    const items = await Favorite.find({ userId }).sort({ createdAt: -1 }).exec();
     return res.json(items);
   } catch (err: any) { console.error(err); return res.status(500).json({ error: 'Internal server error' }) }
 }
@@ -52,7 +57,7 @@ export async function getFavorite(req: Request, res: Response) {
   try {
     const userId = (req as any).userId;
     const id = req.params.id;
-    const f = await Favorite.findOne({ _id: id, userId }).populate('movieId').exec();
+    const f = await Favorite.findOne({ _id: id, userId }).exec();
     if (!f) return res.status(404).json({ error: 'Not found' });
     return res.json(f);
   } catch (err: any) { console.error(err); return res.status(500).json({ error: 'Internal server error' }) }
