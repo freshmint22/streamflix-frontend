@@ -23,6 +23,7 @@ type MovieCardProps = {
   isFavorited?: boolean;
   onPlay?: (payload: PlayPayload) => void;
   onFavoriteRemoved?: (movieId: string) => void;
+  onFavoriteAdded?: (payload: PlayPayload) => void;
 };
 
 export default function MovieCard({
@@ -36,6 +37,7 @@ export default function MovieCard({
   isFavorited = false,
   onPlay,
   onFavoriteRemoved,
+  onFavoriteAdded,
 }: MovieCardProps) {
   const [fav, setFav] = useState<boolean>(isFavorited);
   const [busy, setBusy] = useState(false);
@@ -45,6 +47,7 @@ export default function MovieCard({
       setBusy(true);
       await favSvc.addFavorite({ id, title, posterUrl: poster, year, videoUrl, overview, rating });
       setFav(true);
+      onFavoriteAdded?.(payload);
     } catch (e) {
       console.error("Add favorite error", e);
       alert("Failed to add favorite");
