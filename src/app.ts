@@ -107,6 +107,7 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
 
 // --- Rutas principales ---
 app.use('/api/auth', authRouter);        // ✅ para register, login, logout
+app.use('/auth', authRouter);            // legacy compatibility for clients sin prefijo /api
 app.use('/api/password', passwordRouter); // ✅ para forgot-password, reset-password
 app.use('/api/users', userRouter);
 app.use('/api/movies', movieRouter);
