@@ -12,6 +12,8 @@ import Trailer from "../pages/Trailer";
 import ProtectedRoute from "./ProtectedRoute";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import ResetPassword from "../pages/ResetPassword";
+
 
 function LayoutWithNav({ children }: { children: React.ReactNode }) {
   return (
@@ -29,10 +31,18 @@ export default function AppRoutes() {
   return (
     <Routes>
       {/* Públicas */}
-  <Route path="/" element={<LayoutWithNav><Landing /></LayoutWithNav>} />
+      <Route
+        path="/"
+        element={
+          <LayoutWithNav>
+            <Landing />
+          </LayoutWithNav>
+        }
+      />
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot" element={<ForgotPassword />} />
+  <Route path="/register" element={<Register />} />
+  <Route path="/forgot" element={<ForgotPassword />} />
+  <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route
         path="/about"
         element={
