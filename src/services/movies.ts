@@ -26,7 +26,7 @@ export async function getMovies(): Promise<Movie[]> {
     "https://storage.googleapis.com/coverr-main/mp4/Footvolley.mp4",
     "https://storage.googleapis.com/coverr-main/mp4/La_Pedrera.mp4",
   ];
-  return (Array.isArray(data) ? data : []).map((item: any) => ({
+  return (Array.isArray(data) ? data : []).map((item: any, index: number) => ({
     id: String(item.id),
     title: item.title || item.name || "Untitled",
     year: item.release_date ? Number(item.release_date.slice(0, 4)) : undefined,
