@@ -1,4 +1,3 @@
-// src/pages/Sitemap.tsx
 import { Link } from "react-router-dom";
 
 export default function Sitemap() {
@@ -29,8 +28,8 @@ export default function Sitemap() {
         style={{
           textAlign: "center",
           marginBottom: "30px",
-          color: "#ffffff", // blanco puro
-          textShadow: "0 2px 6px rgba(0,0,0,0.6)", // sombra sutil para contraste
+          color: "#ffffff",
+          textShadow: "0 2px 6px rgba(0,0,0,0.6)",
           fontWeight: "900",
           letterSpacing: "0.5px",
         }}
@@ -55,7 +54,7 @@ export default function Sitemap() {
               to={r.path}
               style={{
                 textDecoration: "none",
-                color: "#7a5cff", // azul metálico brillante
+                color: "#7a5cff",
                 fontWeight: "600",
               }}
             >
