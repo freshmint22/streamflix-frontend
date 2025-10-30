@@ -73,3 +73,14 @@ export const ratingSchema = Joi.object({
   movieId: Joi.string().required(),
   rating: Joi.number().integer().min(1).max(5).required(),
 });
+
+export const subtitleUpsertSchema = Joi.object({
+  movieId: Joi.string().required(),
+  language: Joi.string().valid('es', 'en').required(),
+  url: Joi.string().uri().required()
+});
+
+export const subtitleDeleteParamsSchema = Joi.object({
+  movieId: Joi.string().required(),
+  language: Joi.string().valid('es', 'en').required()
+});

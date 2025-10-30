@@ -12,6 +12,7 @@ import playbackRouter from './routes/playback.routes';
 import favoriteRouter from './routes/favorite.routes';
 import passwordRouter from './routes/password.routes';
 import jwt from 'jsonwebtoken';
+import subtitleRouter from './routes/subtitle.routes';
 import { isTokenBlacklisted } from './lib/tokenBlacklist';
 
 const app = express();
@@ -112,6 +113,7 @@ app.use('/api/password', passwordRouter); // ✅ para forgot-password, reset-pas
 app.use('/api/users', userRouter);
 app.use('/api/movies', movieRouter);
 app.use('/api/playback', playbackRouter);
+app.use('/api/subtitles', subtitleRouter);
 // Favorites endpoints
 app.use('/api/favorites', favoriteRouter);
 
