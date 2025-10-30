@@ -1,4 +1,4 @@
-import { useRef, useEffect, type CSSProperties, type MouseEvent } from "react";
+import { useRef, useEffect, useState, type CSSProperties, type MouseEvent } from "react";
 import { API_BASE } from "../services/api";
 
 type PlayerProps = {
@@ -13,6 +13,8 @@ type PlayerProps = {
 export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastPositionRef = useRef(0);
+  const [subtitles, setSubtitles] = useState<{ es: string | null; en: string | null }>({ es: null, en: null });
+  const [language, setLanguage] = useState<'es' | 'en' | 'none'>('none'); // default no subtitles
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -28,13 +30,27 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     v.pause();
     v.currentTime = 0;
     lastPositionRef.current = 0;
-    // Reload the media element to ensure the new source starts fresh.
     try {
       v.load();
     } catch (e) {
       console.warn("Unable to reload video element", e);
     }
   }, [videoUrl]);
+
+  // Fetch subtitles from the backend
+  useEffect(() => {
+    const fetchSubtitles = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/subtitles/${movieId}`);
+        const data = await response.json();
+        setSubtitles(data);
+      } catch (error) {
+        console.error("Error fetching subtitles:", error);
+      }
+    };
+
+    fetchSubtitles();
+  }, [movieId]);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -106,6 +122,10 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     }
   }
 
+  const handleSubtitleToggle = (lang: 'es' | 'en' | 'none') => {
+    setLanguage(lang);
+  };
+
   return (
     <div
       role="dialog"
@@ -128,12 +148,21 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
             preload="metadata"
             style={videoStyles}
             aria-label="Video content"
-          />
+          >
+            {language !== 'none' && subtitles[language] && (
+              <track kind="subtitles" srcLang={language} label={language === 'es' ? "Español" : "English"} src={subtitles[language]} default />
+            )}
+          </video>
         ) : (
           <div style={emptyStyles}>
             <p>No encontramos un trailer disponible para esta película.</p>
           </div>
         )}
+        <div style={subtitleControls}>
+          <button onClick={() => handleSubtitleToggle('none')} disabled={!subtitles.es && !subtitles.en}>Sin Subtítulos</button>
+          <button onClick={() => handleSubtitleToggle('es')} disabled={!subtitles.es}>Subtítulos en Español</button>
+          <button onClick={() => handleSubtitleToggle('en')} disabled={!subtitles.en}>Subtítulos en Inglés</button>
+        </div>
       </div>
     </div>
   );
@@ -203,4 +232,11 @@ const emptyStyles: CSSProperties = {
   border: "1px solid rgba(148,163,184,0.15)",
   textAlign: "center",
   padding: "32px",
+};
+
+const subtitleControls: CSSProperties = {
+  display: "flex",
+  justifyContent: "space-around",
+  width: "100%",
+  marginTop: "16px",
 };
