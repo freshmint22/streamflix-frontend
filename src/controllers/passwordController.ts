@@ -12,12 +12,20 @@ import { sendEmail } from "../utils/sendEmail";
  */
 export const forgotPassword = async (req: Request, res: Response) => {
   const { email } = req.body;
+  const maskEmail = (value: string) => {
+    const [local, domain] = value.split("@");
+    if (!local || !domain) return value;
+    if (local.length <= 2) return `${local[0] || "*"}*@${domain}`;
+    return `${local[0]}${"*".repeat(local.length - 2)}${local.slice(-1)}@${domain}`;
+  };
+  const maskedEmail = maskEmail(email || "");
   const user = await User.findOne({ email });
   // Behavior is configurable via env var REVEAL_USER_EXISTENCE.
   // By default we do NOT reveal whether the email exists (to avoid user enumeration).
   const reveal = String(process.env.REVEAL_USER_EXISTENCE || "false").toLowerCase() === "true";
 
   if (!user) {
+    console.log(`[Password] Forgot-password requested for unknown email ${maskedEmail}`);
     if (reveal) {
       // Reveal that the email is not registered (less secure)
       return res.status(404).json({ message: "Email not registered" });
@@ -30,6 +38,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
   // Create a token and send email
   const token = crypto.randomBytes(20).toString("hex");
+  console.log(`[Password] Forgot-password token created for ${maskedEmail}`);
   user.resetPasswordToken = token;
   user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
   await user.save();
@@ -39,7 +48,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
   const recipient = override && override !== "" ? override : user.email;
   const message = `<p>Hola!<br/>Haz clic en el siguiente enlace para restablecer tu contraseña:</p><p><a href="${resetUrl}">Restablecer contraseña</a></p>` +
     (override ? `<p><em>Intended for: ${user.email}</em></p>` : "");
-  try { await sendEmail(recipient, "Recuperación de contraseña - StreamFlix", message); } catch(e){ console.error('Send email error', e) }
+  try {
+    await sendEmail(recipient, "Recuperación de contraseña - StreamFlix", message);
+    console.log(`[Password] Reset email dispatched for ${maskedEmail}${override ? ` (override -> ${override})` : ""}`);
+  } catch(e){
+    console.error('Send email error', e);
+  }
 
   return res.status(200).json({ message: "If an account with that email exists, a reset link has been sent" });
 };
