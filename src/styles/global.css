@@ -1,14 +1,15 @@
 :root {
-  /* Dark theme variables */
-  --bg: #111213;        /* page background - dark gray */
-  --panel: #181818;     /* window / panel background */
-  --panel-light: #f5f5f7; /* light panels (forms, modals) */
-  --text: #eaeaea;      /* primary text color */
+  /* 🎨 Dark futuristic metallic theme */
+  --bg: #0d0b1a;          /* fondo morado oscuro metálico futurista */
+  --panel: #18182a;       /* paneles oscuros */
+  --panel-light: #f5f5f7; /* paneles claros */
+  --text: #eaeaea;        /* texto general claro */
   --muted: #b3b3b3;
   --border: #2b2b2b;
-  --brand: #5d3bff;
+  --brand: #7a5cff;       /* morado metálico vibrante */
 }
 
+/* 🌌 Base */
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -19,11 +20,63 @@ html, body, #root {
   font-family: "Poppins", "Segoe UI", sans-serif;
 }
 
+/* ⚡ Botones morado metálico */
 .btn {
-  background: var(--brand); color:#fff; border:none; border-radius:8px;
-  padding:10px 14px; cursor:pointer; font-weight:600;
+  background: linear-gradient(135deg, #7a5cff, #5d3bff);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(122, 92, 255, 0.4);
+  transition: all 0.3s ease;
 }
-.btn:disabled { opacity:.6; cursor:not-allowed; }
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 14px rgba(122, 92, 255, 0.6);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 🧩 Inputs */
 .input {
-  width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border);
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #141325;
+  color: var(--text);
+}
+
+/* 💬 Texto del cuadro de registro (más discreto y legible) */
+.texto-registro,
+.texto-cta,
+.texto-principal,
+.hero p,
+.hero span,
+.cta p,
+.cta span {
+  color: #ffffff !important;      /* blanco puro */
+  font-size: 1rem;                /* tamaño más discreto */
+  font-weight: 500;               /* menos pesado */
+  text-align: center;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  margin-bottom: 0.8rem;
+  opacity: 0.95;
+}
+
+/* 🧭 Título "Mapa del Sitio" — negro total, aislado */
+.sitemap-title,
+h1.sitemap-title,
+h1#mapa-del-sitio {
+  color: #000000 !important;   /* negro absoluto */
+  font-weight: 900 !important; /* negrita fuerte */
+  text-shadow: none !important;
+  background: transparent !important;
+  font-size: 2rem !important;
+  text-align: center !important;
+  margin-bottom: 30px !important;
 }
