@@ -7,14 +7,14 @@
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "allowJs": false,               
+    "allowJs": false,
     "checkJs": false,
     "noEmit": true,
     "skipLibCheck": true,
-    "strict": true,               
+    "strict": true,
     "baseUrl": "src",
     "forceConsistentCasingInFileNames": true,
-    "types": ["vite/client"]       // 👈 para tipos de import.meta.env
+    "types": ["vite/client"]
   },
   "include": ["src"]
 }

@@ -1,0 +1,20 @@
+# Render service configuration for the backend folder
+# Place this file inside the `streamflix-backend` directory if you deploy
+# that folder as a separate service or point Render at that subdirectory.
+
+services:
+  - type: web
+    name: streamflix-backend
+    env: node
+    branch: main
+    plan: free
+    # rootDirectory is '.' because this YAML lives inside the backend folder
+    rootDirectory: .
+    # Ensure devDependencies (types) are installed before running TypeScript
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+
+# Environment variables (add these in the Render dashboard, not here):
+# - MONGO_URI
+# - JWT_SECRET
+# - CORS_ORIGIN
