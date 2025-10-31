@@ -16,5 +16,14 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["vite/client"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/server.ts",
+    "src/app.ts",
+    "src/db.ts",
+    "src/controllers/**",
+    "src/models/**",
+    "src/routes/**",
+    "src/middleware/**"
+  ]
 }
