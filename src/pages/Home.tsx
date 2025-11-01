@@ -1,12 +1,8 @@
-// src/pages/Home.tsx
 import { useEffect, useState, type CSSProperties } from "react";
 import { getMovies, type Movie } from "../services/movies";
 import MovieCard from "../components/MovieCard";
 import Player from "../components/Player";
 
-/**
- * Home page - lists movies and allows playing them using Player component.
- */
 export default function Home() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +13,7 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await getMovies();   // Llama al backend (GET /movies)
+        const data = await getMovies();
         setMovies(data);
       } catch (e: any) {
         setError(e?.message || "Error cargando las películas");
@@ -26,13 +22,9 @@ export default function Home() {
       }
     })();
   }, []);
+
   if (loading) return <p style={{ textAlign: "center" }}>Cargando películas...</p>;
-  if (error)
-    return (
-      <p style={{ color: "#e53935", textAlign: "center" }}>
-        {error}
-      </p>
-    );
+  if (error) return <p style={{ color: "#e53935", textAlign: "center" }}>{error}</p>;
 
   return (
     <div style={styles.page}>
@@ -48,15 +40,16 @@ export default function Home() {
           {movies.map((m) => {
             const mm = m as any;
             return (
-              <MovieCard
-                key={mm._id || mm.id}
-                id={mm._id || mm.id}
-                title={mm.title}
-                year={mm.releaseYear || mm.year}
-                poster={mm.thumbnailUrl || mm.posterUrl || posterFallback}
-                videoUrl={mm.videoUrl}
-                onPlay={(payload: any) => setPlayingMovie(payload)}
-              />
+              <div key={mm._id || mm.id} style={styles.cardWrapper}>
+                <MovieCard
+                  id={mm._id || mm.id}
+                  title={mm.title}
+                  year={mm.releaseYear || mm.year}
+                  poster={mm.thumbnailUrl || mm.posterUrl || posterFallback}
+                  videoUrl={mm.videoUrl}
+                  onPlay={(payload: any) => setPlayingMovie(payload)}
+                />
+              </div>
             );
           })}
         </div>
@@ -66,7 +59,11 @@ export default function Home() {
 
       {playingMovie && (
         <div style={styles.playerShell}>
-          <Player movieId={playingMovie.id} videoUrl={playingMovie.videoUrl} onClose={() => setPlayingMovie(null)} />
+          <Player
+            movieId={playingMovie.id}
+            videoUrl={playingMovie.videoUrl}
+            onClose={() => setPlayingMovie(null)}
+          />
         </div>
       )}
     </div>
@@ -109,6 +106,12 @@ const styles: Record<string, CSSProperties> = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
     gap: 20,
+  },
+  cardWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "stretch",
+    height: "100%", // 🔥 fuerza todas las tarjetas a tener la misma altura visual
   },
   empty: {
     marginTop: 36,

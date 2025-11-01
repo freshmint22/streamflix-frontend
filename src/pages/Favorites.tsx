@@ -1,77 +1,63 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { getFavorites, type FavoriteItem } from "../services/favorites";
+import favSvc, { FavoriteItem } from "../services/favorites";
 import MovieCard from "../components/MovieCard";
 import Player from "../components/Player";
 
-type PlayState = { id: string; title: string; videoUrl?: string };
-
-const posterFallback = "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
-
-export default function Favorites() {
-  const [items, setItems] = useState<FavoriteItem[]>([]);
+export default function FavoritesPage() {
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [playing, setPlaying] = useState<PlayState | null>(null);
+  const [playing, setPlaying] = useState<any | null>(null);
 
+  const posterFallback =
+    "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
+
+  // 🔹 Cargar los favoritos desde el backend
   useEffect(() => {
     (async () => {
       try {
-        setLoading(true);
-        const list = await getFavorites();
-        setItems(list || []);
-      } catch (e: any) {
-        setError(e?.message || "No pudimos cargar tus favoritos");
+        const data = await favSvc.getFavorites();
+        console.log("Favoritos cargados:", data);
+        setFavorites(Array.isArray(data) ? data : []);
+      } catch (err: any) {
+        console.error("Error al cargar favoritos:", err);
+        setError(err.message || "Error cargando favoritos");
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const handleRemoved = (movieId: string) => {
-    setItems((prev) => prev.filter((fav) => fav.movieId !== movieId && fav._id !== movieId));
-    if (playing?.id === movieId) {
-      setPlaying(null);
-    }
-  };
-
-  if (loading) {
-    return <div style={styles.feedback}>Cargando tus favoritos...</div>;
-  }
-
-  if (error) {
-    return (
-      <div style={styles.error} role="alert">
-        {error}
-      </div>
+  // 🔹 Cuando se remueve un favorito
+  function handleRemoved(id: string) {
+    setFavorites((prev) =>
+      prev.filter((f) => f.movieId !== id && f.movie?.id !== id)
     );
   }
 
+  if (loading) return <p style={styles.loading}>Cargando favoritos...</p>;
+  if (error) return <p style={styles.error}>{error}</p>;
+
   return (
     <div style={styles.page}>
-      <header style={styles.header}>
-        <h1 style={styles.title}>Tus favoritos</h1>
-        <p style={styles.subtitle}>Encuentra rápidamente los títulos que guardaste y retoma sus avances cuando quieras.</p>
-      </header>
+      <h1 style={styles.title}>Tus Favoritos ❤️</h1>
 
-      {items.length === 0 ? (
-        <div style={styles.emptyCard}>
-          <h2>No tienes favoritos guardados</h2>
-          <p>Explora el catálogo y toca “Añadir a favoritos” en cualquier película que te guste.</p>
-        </div>
+      {favorites.length === 0 ? (
+        <p style={styles.empty}>No has agregado ninguna película a favoritos.</p>
       ) : (
         <div style={styles.grid}>
-          {items.map((fav) => {
-            const movieId = fav.movie?.id || fav.movieId;
+          {favorites.map((fav) => {
+            const m = fav.movie || {};
             return (
               <MovieCard
-                key={fav._id || movieId}
-                id={movieId}
-                title={fav.movie?.title || "Sin título"}
-                year={fav.movie?.year}
-                poster={fav.movie?.posterUrl || posterFallback}
-                videoUrl={fav.movie?.videoUrl}
-                isFavorited
-                onPlay={(payload: PlayState) => setPlaying(payload)}
+                key={fav._id || fav.movieId}
+                id={m.id || fav.movieId}
+                title={m.title || "Sin título"}
+                year={m.year}
+                poster={m.posterUrl || m.poster || posterFallback}
+                videoUrl={m.videoUrl || ""}
+                isFavorited={true}
+                onPlay={(movie) => setPlaying(movie)}
                 onFavoriteRemoved={handleRemoved}
               />
             );
@@ -79,8 +65,15 @@ export default function Favorites() {
         </div>
       )}
 
+      {/* 🔹 Reproductor de video */}
       {playing && (
-        <Player movieId={playing.id} videoUrl={playing.videoUrl || ""} onClose={() => setPlaying(null)} />
+        <div style={styles.playerShell}>
+          <Player
+            movieId={playing.id}
+            videoUrl={playing.videoUrl}
+            onClose={() => setPlaying(null)}
+          />
+        </div>
       )}
     </div>
   );
@@ -90,53 +83,42 @@ const styles: Record<string, CSSProperties> = {
   page: {
     maxWidth: 1200,
     margin: "0 auto",
-    padding: "48px 32px 96px",
-    borderRadius: 28,
-    background: "linear-gradient(150deg, rgba(13,23,42,0.95), rgba(24,29,55,0.9))",
-    boxShadow: "0 40px 110px rgba(6,12,30,0.55)",
+    padding: "48px 40px 100px",
+    background:
+      "linear-gradient(140deg, rgba(14,23,44,0.96), rgba(24,31,56,0.88))",
     color: "#e2e8f0",
-    backdropFilter: "blur(10px)",
-  },
-  header: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-    marginBottom: 28,
+    borderRadius: 32,
+    boxShadow: "0 45px 120px rgba(5,11,26,0.55)",
+    minHeight: "100vh",
   },
   title: {
-    margin: 0,
-    fontSize: "2.5rem",
+    fontSize: "2rem",
     fontWeight: 700,
+    marginBottom: 32,
     color: "#f8fafc",
-  },
-  subtitle: {
-    margin: 0,
-    maxWidth: 680,
-    color: "#94a3b8",
+    textAlign: "center",
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-    gap: 20,
+    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+    gap: 28,
+    justifyItems: "center",
+    alignItems: "start",
   },
-  feedback: {
+  empty: {
+    color: "#94a3b8",
     textAlign: "center",
-    padding: "80px 20px",
+  },
+  loading: {
+    textAlign: "center",
     color: "#94a3b8",
   },
   error: {
+    color: "#ef4444",
     textAlign: "center",
-    padding: "80px 20px",
-    color: "#fda4af",
-    fontWeight: 600,
   },
-  emptyCard: {
+  playerShell: {
     marginTop: 40,
-    padding: "48px 32px",
-    borderRadius: 24,
-    background: "rgba(15,23,42,0.55)",
-    border: "1px solid rgba(148,163,184,0.12)",
-    textAlign: "center",
-    color: "#cbd5f5",
   },
 };
+

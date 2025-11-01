@@ -1,68 +1,46 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import "./Sitemap.scss";
 
 export default function Sitemap() {
-  const routes = [
-    { path: "/", name: "Inicio" },
-    { path: "/home", name: "Inicio (Usuarios)" },
-    { path: "/about", name: "Acerca de" },
-    { path: "/login", name: "Iniciar Sesión" },
-    { path: "/register", name: "Registrarse" },
-    { path: "/forgot", name: "Recuperar Contraseña" },
-    { path: "/profile", name: "Perfil" },
-    { path: "/favorites", name: "Favoritos" },
-    { path: "/sitemap", name: "Mapa del Sitio" },
-  ];
+  const [loggedIn, setLoggedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    setLoggedIn(!!localStorage.getItem("sf_token"));
+
+    // actualiza en tiempo real si cambia el token en otra pestaña
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "sf_token") setLoggedIn(!!e.newValue);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   return (
-    <div
-      style={{
-        maxWidth: "900px",
-        margin: "40px auto",
-        padding: "20px",
-        borderRadius: "16px",
-        backgroundColor: "var(--panel)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-      }}
-    >
-      <h1
-        style={{
-          textAlign: "center",
-          marginBottom: "30px",
-          color: "#ffffff",
-          textShadow: "0 2px 6px rgba(0,0,0,0.6)",
-          fontWeight: "900",
-          letterSpacing: "0.5px",
-        }}
-      >
-        Mapa del Sitio
-      </h1>
+    <div className="sf-sitemap">
+      <h1 className="sf-sitemap__title">Mapa del Sitio</h1>
 
-      <ul style={{ listStyle: "none", padding: 0, fontSize: "18px" }}>
-        {routes.map((r) => (
-          <li
-            key={r.path}
-            style={{
-              margin: "12px 0",
-              backgroundColor: "var(--panel-light)",
-              borderRadius: "12px",
-              padding: "10px 15px",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-              transition: "transform 0.2s ease, box-shadow 0.3s ease",
-            }}
-          >
-            <Link
-              to={r.path}
-              style={{
-                textDecoration: "none",
-                color: "#7a5cff",
-                fontWeight: "600",
-              }}
-            >
-              {r.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {!loggedIn ? (
+        <div className="sf-sitemap__grid">
+          <Link to="/" className="sf-sitemap__card">Inicio</Link>
+          <Link to="/about" className="sf-sitemap__card">Acerca de</Link>
+          <Link to="/login" className="sf-sitemap__card">Iniciar Sesión</Link>
+          <Link to="/register" className="sf-sitemap__card">Registrarse</Link>
+          <Link to="/forgot" className="sf-sitemap__card">Recuperar Contraseña</Link>
+          <Link to="/sitemap" className="sf-sitemap__card">Mapa del Sitio</Link>
+        </div>
+      ) : (
+        <div className="sf-sitemap__grid">
+          <Link to="/home" className="sf-sitemap__card">Inicio</Link>
+          <Link to="/profile" className="sf-sitemap__card">Perfil</Link>
+          <Link to="/favorites" className="sf-sitemap__card">Favoritos</Link>
+          <Link to="/about" className="sf-sitemap__card">Acerca de</Link>
+          
+          <Link to="/profile" className="sf-sitemap__card">Eliminar Cuenta</Link>
+          <Link to="/sitemap" className="sf-sitemap__card">Mapa del Sitio </Link>
+         <Link to="/forgot" className="sf-sitemap__card">Recuperar Contraseña</Link>
+        </div>
+      )}
     </div>
   );
 }

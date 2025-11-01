@@ -1,197 +1,61 @@
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import "./Navbar.scss";
 
-export default function Navbar() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [open, setOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const isRoot = location.pathname === "/";
-  const isAuthed = Boolean(localStorage.getItem("sf_token"));
+interface NavbarProps {
+  loggedIn: boolean;
+  username?: string;
+  onLogout?: () => void;
+}
 
-  const handleLogout = () => {
-    localStorage.removeItem("sf_token");
-    alert("Has cerrado sesión.");
-    navigate("/login");
-  };
+export default function Navbar({ loggedIn, username, onLogout }: NavbarProps) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  useEffect(() => {
-    const onDoc = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("click", onDoc);
-    return () => document.removeEventListener("click", onDoc);
-  }, []);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setMobileOpen(false);
-        setOpen(false);
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   return (
-    <header className="sf-navbar">
-      <div
-        className="sf-navbar__brand"
-        onClick={() => navigate("/home")}
-        tabIndex={0}
-        role="button"
-        onKeyDown={(e) => e.key === "Enter" && navigate("/home")}
-      >
-        StreamFlix
+    <nav className="sf-navbar">
+      <div className="sf-navbar__brand">
+        <Link to="/">StreamFlix</Link>
       </div>
 
-      <nav className="sf-navbar__nav" aria-label="Main navigation">
-        <NavLink
-          to="/home"
-          className={({ isActive }) =>
-            isActive ? "sf-navbar__link active" : "sf-navbar__link"
-          }
-        >
-          Home
-        </NavLink>
-        <NavLink
-          to="/about"
-          className={({ isActive }) =>
-            isActive ? "sf-navbar__link active" : "sf-navbar__link"
-          }
-        >
-          Sobre nosotros
-        </NavLink>
-
-        <NavLink
-          to="/sitemap"
-          className={({ isActive }) =>
-            isActive ? "sf-navbar__link active" : "sf-navbar__link"
-          }
-        >
-          Mapa del Sitio
-        </NavLink>
-
-        {isRoot ? (
-          <button
-            className="btn-primary"
-            onClick={() => navigate("/login")}
-            aria-label="Iniciar sesión"
-          >
-            Iniciar sesión
-          </button>
-        ) : (
-          <button
-            className="sf-navbar__toggle"
-            aria-label="Open menu"
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen((s) => !s)}
-          >
-            <span className="sf-navbar__hamburger" />
-          </button>
+      <div className="sf-navbar__nav">
+        {!loggedIn && (
+          <>
+            <Link className="sf-navbar__link" to="/">Inicio</Link>
+            <Link className="sf-navbar__link" to="/login">Iniciar Sesión</Link>
+            <Link className="sf-navbar__link" to="/register">Registrarse</Link>
+            <Link className="sf-navbar__link" to="/about">Acerca de</Link>
+          </>
         )}
 
-        {isAuthed && (
-          <div className="sf-navbar__profile" ref={menuRef}>
-            <button
-              aria-haspopup="true"
-              aria-expanded={open}
-              className="sf-navbar__profile-btn"
-              onClick={() => setOpen((s) => !s)}
-            >
-              Perfil
-            </button>
+        {loggedIn && (
+          <>
+            <Link className="sf-navbar__link" to="/home">Inicio</Link>
+            <Link className="sf-navbar__link" to="/favorites">Favoritos</Link>
 
-            {open && (
-              <div className="sf-navbar__profile-menu" role="menu">
-                <button
-                  className="sf-navbar__profile-item"
-                  onClick={() => navigate("/profile")}
-                  role="menuitem"
-                >
-                  Ver perfil
-                </button>
-                <button
-                  className="sf-navbar__profile-item"
-                  onClick={handleLogout}
-                  role="menuitem"
-                >
-                  Cerrar sesión
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </nav>
-
-      {mobileOpen && (
-        <div
-          className="sf-navbar__mobile"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setMobileOpen(false)}
-        >
-          <div
-            className="sf-navbar__mobile-inner"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <NavLink
-              to="/home"
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                isActive ? "sf-navbar__link active" : "sf-navbar__link"
-              }
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/about"
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                isActive ? "sf-navbar__link active" : "sf-navbar__link"
-              }
-            >
-              Sobre nosotros
-            </NavLink>
-            <NavLink
-              to="/sitemap"
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                isActive ? "sf-navbar__link active" : "sf-navbar__link"
-              }
-            >
-              Mapa del Sitio
-            </NavLink>
-
-            <div className="sf-navbar__mobile-section">
-              <h3>Opciones</h3>
-              <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  navigate("/profile");
-                }}
-                className="sf-navbar__link"
-              >
-                Perfil
+            <div className="sf-navbar__profile">
+              <button className="sf-navbar__profile-btn" onClick={toggleDropdown}>
+                {username ? `Perfil (${username})` : "Perfil"}
               </button>
-              <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  handleLogout();
-                }}
-                className="sf-navbar__link"
-              >
-                Salir
-              </button>
+
+              {dropdownOpen && (
+                <div className="sf-navbar__profile-menu">
+                  <Link to="/profile" className="sf-navbar__profile-item">Perfil</Link>
+                  <Link to="/favorites" className="sf-navbar__profile-item">Favoritos</Link>
+                  <button
+                    className="sf-navbar__profile-item sf-navbar__logout"
+                    onClick={onLogout}
+                  >
+                    Cerrar Sesión
+                  </button>
+                  <Link to="/sitemap" className="sf-navbar__profile-item">Mapa del Sitio</Link>
+                </div>
+              )}
             </div>
-          </div>
-        </div>
-      )}
-    </header>
+          </>
+        )}
+      </div>
+    </nav>
   );
 }

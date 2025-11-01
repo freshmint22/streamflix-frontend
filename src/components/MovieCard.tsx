@@ -15,14 +15,29 @@ type MovieCardProps = {
   onFavoriteRemoved?: (movieId: string) => void;
 };
 
-export default function MovieCard({ id, title, year, poster = "", videoUrl, isFavorited = false, onPlay, onFavoriteRemoved }: MovieCardProps) {
+export default function MovieCard({
+  id,
+  title,
+  year,
+  poster = "",
+  videoUrl,
+  isFavorited = false,
+  onPlay,
+  onFavoriteRemoved,
+}: MovieCardProps) {
   const [fav, setFav] = useState<boolean>(isFavorited);
   const [busy, setBusy] = useState(false);
 
   async function handleAdd() {
     try {
       setBusy(true);
-      await favSvc.addFavorite({ id, title, posterUrl: poster, year, videoUrl });
+      await favSvc.addFavorite({
+        id,
+        title,
+        posterUrl: poster,
+        year,
+        videoUrl,
+      });
       setFav(true);
     } catch (e) {
       console.error("Add favorite error", e);
@@ -48,13 +63,17 @@ export default function MovieCard({ id, title, year, poster = "", videoUrl, isFa
 
   const canPlay = Boolean(videoUrl);
   const playLabel = canPlay ? "Ver trailer" : "Sin video";
+  const posterUrl =
+    poster && poster.startsWith("http")
+      ? poster
+      : "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
 
   return (
     <div style={styles.card}>
       <div
         style={{
           ...styles.poster,
-          backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0) 45%, rgba(15,23,42,0.92) 100%), url(${poster})`,
+          backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0) 45%, rgba(15,23,42,0.92) 100%), url(${posterUrl})`,
         }}
       />
       <div style={styles.body}>
@@ -62,7 +81,6 @@ export default function MovieCard({ id, title, year, poster = "", videoUrl, isFa
           <h3 style={styles.title}>{title}</h3>
           <span style={styles.meta}>{year || "—"}</span>
         </div>
-
         <div style={styles.actions}>
           <button
             style={{
@@ -72,17 +90,14 @@ export default function MovieCard({ id, title, year, poster = "", videoUrl, isFa
             }}
             onClick={() => canPlay && onPlay && onPlay({ id, title, videoUrl })}
             disabled={!canPlay}
-            aria-label={`Play ${title}`}
           >
             {playLabel}
           </button>
-
           {!fav ? (
             <button
               style={styles.btnGhost}
               onClick={handleAdd}
               disabled={busy}
-              aria-label={`Add ${title} to favorites`}
             >
               Añadir a favoritos
             </button>
@@ -91,7 +106,6 @@ export default function MovieCard({ id, title, year, poster = "", videoUrl, isFa
               style={styles.btnDanger}
               onClick={handleRemove}
               disabled={busy}
-              aria-label={`Remove ${title} from favorites`}
             >
               Quitar
             </button>
@@ -108,10 +122,10 @@ const styles: Record<string, CSSProperties> = {
     flexDirection: "column",
     borderRadius: 24,
     overflow: "hidden",
-    background: "linear-gradient(180deg, rgba(15,23,42,0.92), rgba(30,41,59,0.92))",
+    background:
+      "linear-gradient(180deg, rgba(15,23,42,0.92), rgba(30,41,59,0.92))",
     border: "1px solid rgba(148,163,184,0.08)",
     boxShadow: "0 22px 45px rgba(8,15,35,0.35)",
-    transition: "transform 0.25s ease, box-shadow 0.25s ease",
   },
   poster: {
     height: 220,
