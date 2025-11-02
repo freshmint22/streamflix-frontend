@@ -1,18 +1,18 @@
 // src/pages/Home.tsx
 import { useEffect, useState, type CSSProperties } from "react";
+import { useNavigate } from "react-router-dom";
 import { getMovies, type Movie } from "../services/movies";
 import MovieCard from "../components/MovieCard";
-import Player from "../components/Player";
 
 /**
- * Home page - lists movies and allows playing them using Player component.
+ * Home page - lists movies and routes to the dedicated trailer experience.
  */
 export default function Home() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [playingMovie, setPlayingMovie] = useState<any | null>(null);
   const posterFallback = "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -55,19 +55,19 @@ export default function Home() {
                 year={mm.releaseYear || mm.year}
                 poster={mm.thumbnailUrl || mm.posterUrl || posterFallback}
                 videoUrl={mm.videoUrl}
-                onPlay={(payload: any) => setPlayingMovie(payload)}
+                overview={mm.overview}
+                rating={mm.rating}
+                onPlay={(payload) =>
+                  navigate(`/trailer/${payload.id}`, {
+                    state: { movie: { ...payload, poster: payload.poster || posterFallback } },
+                  })
+                }
               />
             );
           })}
         </div>
       ) : (
         <p style={styles.empty}>No movies available.</p>
-      )}
-
-      {playingMovie && (
-        <div style={styles.playerShell}>
-          <Player movieId={playingMovie.id} videoUrl={playingMovie.videoUrl} onClose={() => setPlayingMovie(null)} />
-        </div>
       )}
     </div>
   );
@@ -113,8 +113,5 @@ const styles: Record<string, CSSProperties> = {
   empty: {
     marginTop: 36,
     color: "#94a3b8",
-  },
-  playerShell: {
-    marginTop: 40,
   },
 };

@@ -10,6 +10,8 @@ export type FavoriteMovie = {
   posterUrl?: string;
   year?: number;
   videoUrl?: string;
+  overview?: string;
+  rating?: number;
 };
 
 export type FavoriteItem = { _id?: string; movieId: string; movie?: FavoriteMovie; note?: string };

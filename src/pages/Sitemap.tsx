@@ -1,6 +1,8 @@
+// src/pages/Sitemap.tsx
 import { Link } from "react-router-dom";
 
 export default function Sitemap() {
+
   const routes = [
     { path: "/", name: "Inicio" },
     { path: "/home", name: "Inicio (Usuarios)" },
@@ -8,8 +10,10 @@ export default function Sitemap() {
     { path: "/login", name: "Iniciar Sesión" },
     { path: "/register", name: "Registrarse" },
     { path: "/forgot", name: "Recuperar Contraseña" },
+    { path: "/reset-password/:token", name: "Restablecer Contraseña" },
     { path: "/profile", name: "Perfil" },
     { path: "/favorites", name: "Favoritos" },
+    { path: "/trailer/:id", name: "Trailer" },
     { path: "/sitemap", name: "Mapa del Sitio" },
   ];
 
@@ -28,8 +32,8 @@ export default function Sitemap() {
         style={{
           textAlign: "center",
           marginBottom: "30px",
-          color: "#ffffff",
-          textShadow: "0 2px 6px rgba(0,0,0,0.6)",
+          color: "#ffffff", // blanco puro
+          textShadow: "0 2px 6px rgba(0,0,0,0.6)", // sombra sutil para contraste
           fontWeight: "900",
           letterSpacing: "0.5px",
         }}
@@ -54,7 +58,7 @@ export default function Sitemap() {
               to={r.path}
               style={{
                 textDecoration: "none",
-                color: "#7a5cff",
+                color: "#7a5cff", // azul metálico brillante
                 fontWeight: "600",
               }}
             >

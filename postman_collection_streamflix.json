@@ -1,0 +1,190 @@
+{
+  "info": {
+    "name": "StreamFlix Backend - Sprint Collection",
+    "_postman_id": "streamflix-backend-collection",
+    "description": "Collection with requests to exercise the StreamFlix backend (register, login, users, movies, playback, favorites, password)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"age\": 25,\n  \"email\": \"{{TEST_EMAIL}}\",\n  \"password\": \"{{PASSWORD}}\"\n}"
+        },
+        "url": { "raw": "{{BASE_URL}}/auth/register", "host": ["{{BASE_URL}}"], "path": ["auth", "register"] }
+      }
+    },
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{TEST_EMAIL}}\",\n  \"password\": \"{{PASSWORD}}\"\n}" },
+        "url": { "raw": "{{BASE_URL}}/auth/login", "host": ["{{BASE_URL}}"], "path": ["auth", "login"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save token to environment variable 'jwt' for subsequent requests",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "  var json = pm.response.json();",
+              "  if (json && json.token) { pm.environment.set('jwt', json.token); }",
+              "  if (json && json.user && json.user.email) { pm.environment.set('current_user_email', json.user.email); }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users - Get profile (me)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "{{BASE_URL}}/users/me", "host": ["{{BASE_URL}}"], "path": ["users", "me"] }
+      }
+    },
+    {
+      "name": "Users - Update profile (me)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User\",\n  \"age\": 26\n}" },
+        "url": { "raw": "{{BASE_URL}}/users/me", "host": ["{{BASE_URL}}"], "path": ["users", "me"] }
+      }
+    },
+    {
+      "name": "Password - Forgot",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{TEST_EMAIL}}\"\n}" },
+        "url": { "raw": "{{BASE_URL}}/auth/forgot-password", "host": ["{{BASE_URL}}"], "path": ["auth", "forgot-password"] }
+      }
+    },
+    {
+      "name": "Password - Reset",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"token\": \"{{RESET_TOKEN}}\",\n  \"password\": \"newPassword123\"\n}" },
+        "url": { "raw": "{{BASE_URL}}/auth/reset-password", "host": ["{{BASE_URL}}"], "path": ["auth", "reset-password"] }
+      }
+    },
+    {
+      "name": "Movies - List",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{BASE_URL}}/api/movies", "host": ["{{BASE_URL}}"], "path": ["api", "movies"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save first movie id to MOVIE_ID environment variable if available",
+              "try {",
+              "  var body = pm.response.json();",
+              "  if (body && body.items && body.items.length) { pm.environment.set('MOVIE_ID', body.items[0]._id); }",
+              "} catch (e) { /* ignore parse errors */ }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Movies - Create (admin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"Sample Movie\",\n  \"description\": \"A short sample movie\",\n  \"year\": 2025\n}" },
+        "url": { "raw": "{{BASE_URL}}/api/movies", "host": ["{{BASE_URL}}"], "path": ["api", "movies"] }
+      }
+    },
+    {
+      "name": "Playback - Start",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"movieId\": \"{{MOVIE_ID}}\",\n  \"position\": 0\n}" },
+        "url": { "raw": "{{BASE_URL}}/api/playback/start", "host": ["{{BASE_URL}}"], "path": ["api", "playback", "start"] }
+      }
+    },
+    {
+      "name": "Favorites - Add",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"movieId\": \"{{MOVIE_ID}}\",\n  \"note\": \"Great movie!\"\n}" },
+        "url": { "raw": "{{BASE_URL}}/api/favorites", "host": ["{{BASE_URL}}"], "path": ["api", "favorites"] }
+      }
+    },
+    {
+      "name": "Favorites - List",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "{{BASE_URL}}/api/favorites", "host": ["{{BASE_URL}}"], "path": ["api", "favorites"] }
+      }
+    },
+        {
+          "name": "Auth - Logout",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/auth/logout", "host": ["{{BASE_URL}}"], "path": ["auth", "logout"] }
+          }
+        },
+    {
+      "name": "Users - Delete account (me)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "{{BASE_URL}}/users/me", "host": ["{{BASE_URL}}"], "path": ["users", "me"] }
+      }
+    }
+  ],
+  "event": [],
+  "variable": [
+    { "key": "BASE_URL", "value": "http://localhost:5000" },
+    { "key": "jwt", "value": "" },
+    { "key": "TEST_EMAIL", "value": "test.user@example.com" },
+    { "key": "PASSWORD", "value": "password123" },
+    { "key": "RESET_TOKEN", "value": "" },
+    { "key": "MOVIE_ID", "value": "" },
+    { "key": "rnd", "value": "{{randomInt}}" }
+  ]
+}

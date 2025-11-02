@@ -8,9 +8,12 @@ import Profile from "../pages/Profile";
 import About from "../pages/About";
 import Favorites from "../pages/Favorites";
 import Sitemap from "../pages/Sitemap";
+import Trailer from "../pages/Trailer";
 import ProtectedRoute from "./ProtectedRoute";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import ResetPassword from "../pages/ResetPassword";
+
 import ResetPassword from "../pages/ResetPassword";
 
 
@@ -30,11 +33,18 @@ export default function AppRoutes() {
   return (
     <Routes>
       {/* Públicas */}
-  <Route path="/" element={<LayoutWithNav><Landing /></LayoutWithNav>} />
+      <Route
+        path="/"
+        element={
+          <LayoutWithNav>
+            <Landing />
+          </LayoutWithNav>
+        }
+      />
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot" element={<ForgotPassword />} />
-       <Route path="/reset-password/:token" element={<ResetPassword />} />
+  <Route path="/register" element={<Register />} />
+  <Route path="/forgot" element={<ForgotPassword />} />
+  <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route
         path="/about"
         element={
@@ -71,6 +81,16 @@ export default function AppRoutes() {
           <ProtectedRoute>
             <LayoutWithNav>
               <Favorites />
+            </LayoutWithNav>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/trailer/:id"
+        element={
+          <ProtectedRoute>
+            <LayoutWithNav>
+              <Trailer />
             </LayoutWithNav>
           </ProtectedRoute>
         }

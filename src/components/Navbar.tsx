@@ -1,5 +1,6 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
+import { FaMap } from "react-icons/fa"; // 👈 Importamos el ícono de mapa
 import "./Navbar.scss";
 
 export default function Navbar() {
@@ -51,38 +52,16 @@ export default function Navbar() {
       </div>
 
       <nav className="sf-navbar__nav" aria-label="Main navigation">
-        <NavLink
-          to="/home"
-          className={({ isActive }) =>
-            isActive ? "sf-navbar__link active" : "sf-navbar__link"
-          }
-        >
+        <NavLink to="/home" className={({ isActive }) => (isActive ? 'sf-navbar__link active' : 'sf-navbar__link')}>
           Home
         </NavLink>
-        <NavLink
-          to="/about"
-          className={({ isActive }) =>
-            isActive ? "sf-navbar__link active" : "sf-navbar__link"
-          }
-        >
+        <NavLink to="/about" className={({ isActive }) => (isActive ? 'sf-navbar__link active' : 'sf-navbar__link')}>
           Sobre nosotros
         </NavLink>
 
-        <NavLink
-          to="/sitemap"
-          className={({ isActive }) =>
-            isActive ? "sf-navbar__link active" : "sf-navbar__link"
-          }
-        >
-          Mapa del Sitio
-        </NavLink>
-
+        {/* show login button on landing (root) otherwise hamburger toggle */}
         {isRoot ? (
-          <button
-            className="btn-primary"
-            onClick={() => navigate("/login")}
-            aria-label="Iniciar sesión"
-          >
+          <button className="btn-primary" onClick={() => navigate('/login')} aria-label="Iniciar sesión">
             Iniciar sesión
           </button>
         ) : (
@@ -107,87 +86,36 @@ export default function Navbar() {
               Perfil
             </button>
 
-            {open && (
-              <div className="sf-navbar__profile-menu" role="menu">
-                <button
-                  className="sf-navbar__profile-item"
-                  onClick={() => navigate("/profile")}
-                  role="menuitem"
-                >
-                  Ver perfil
-                </button>
-                <button
-                  className="sf-navbar__profile-item"
-                  onClick={handleLogout}
-                  role="menuitem"
-                >
-                  Cerrar sesión
-                </button>
-              </div>
-            )}
+          {open && (
+            <div className="sf-navbar__profile-menu" role="menu">
+              <button className="sf-navbar__profile-item" onClick={() => navigate('/profile')} role="menuitem">Ver perfil</button>
+              <button className="sf-navbar__profile-item" onClick={handleLogout} role="menuitem">Cerrar sesión</button>
+            </div>
+          )}
           </div>
         )}
       </nav>
 
       {mobileOpen && (
-        <div
-          className="sf-navbar__mobile"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setMobileOpen(false)}
-        >
-          <div
-            className="sf-navbar__mobile-inner"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <NavLink
-              to="/home"
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                isActive ? "sf-navbar__link active" : "sf-navbar__link"
-              }
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/about"
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                isActive ? "sf-navbar__link active" : "sf-navbar__link"
-              }
-            >
-              Sobre nosotros
-            </NavLink>
-            <NavLink
-              to="/sitemap"
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                isActive ? "sf-navbar__link active" : "sf-navbar__link"
-              }
-            >
-              Mapa del Sitio
-            </NavLink>
+        <div className="sf-navbar__mobile" role="dialog" aria-modal="true" onClick={() => setMobileOpen(false)}>
+          <div className="sf-navbar__mobile-inner" onClick={(e) => e.stopPropagation()}>
+            {/* overlay closes when clicking outside or pressing Escape */}
+            <NavLink to="/home" onClick={() => setMobileOpen(false)} className={({ isActive }) => (isActive ? 'sf-navbar__link active' : 'sf-navbar__link')}>Home</NavLink>
+            <NavLink to="/about" onClick={() => setMobileOpen(false)} className={({ isActive }) => (isActive ? 'sf-navbar__link active' : 'sf-navbar__link')}>Sobre nosotros</NavLink>
+            {isAuthed && (
+              <NavLink
+                to="/favorites"
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) => (isActive ? 'sf-navbar__link active' : 'sf-navbar__link')}
+              >
+                Favoritos
+              </NavLink>
+            )}
 
             <div className="sf-navbar__mobile-section">
               <h3>Opciones</h3>
-              <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  navigate("/profile");
-                }}
-                className="sf-navbar__link"
-              >
-                Perfil
-              </button>
-              <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  handleLogout();
-                }}
-                className="sf-navbar__link"
-              >
-                Salir
-              </button>
+              <button onClick={() => { setMobileOpen(false); navigate('/profile'); }} className="sf-navbar__link">Perfil</button>
+              <button onClick={() => { setMobileOpen(false); handleLogout(); }} className="sf-navbar__link">Salir</button>
             </div>
           </div>
         </div>
