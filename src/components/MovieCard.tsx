@@ -1,36 +1,21 @@
-import { useState } from "react";
-import type { CSSProperties } from "react";
-import favSvc from "../services/favorites";
-
-type PlayPayload = {
-  id: string;
-  title: string;
-  poster: string;
-  year?: number;
-  videoUrl?: string;
-  overview?: string;
-  rating?: number;
-};
+import React, { useState } from "react";
 
 type MovieCardProps = {
   id: string;
   title: string;
   year?: number;
-  poster?: string;
+  poster: string;
   videoUrl?: string;
-  overview?: string;
-  rating?: number;
-  isFavorited?: boolean;
-  onPlay?: (payload: PlayPayload) => void;
-  onFavoriteRemoved?: (movieId: string) => void;
-  onFavoriteAdded?: (payload: PlayPayload) => void;
+  onPlay: (payload: any) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 };
 
 export default function MovieCard({
   id,
   title,
   year,
-  poster = "",
+  poster,
   videoUrl,
   overview,
   rating,
@@ -132,83 +117,60 @@ export default function MovieCard({
   );
 }
 
-const styles: Record<string, CSSProperties> = {
-  card: {
+const cardStyles: Record<string, React.CSSProperties> = {
+  container: {
     display: "flex",
     flexDirection: "column",
-    borderRadius: 24,
+    height: "100%",
+    backgroundColor: "#1e293b",
+    borderRadius: 16,
+    padding: 12,
     overflow: "hidden",
-    background:
-      "linear-gradient(180deg, rgba(15,23,42,0.92), rgba(30,41,59,0.92))",
-    border: "1px solid rgba(148,163,184,0.08)",
-    boxShadow: "0 22px 45px rgba(8,15,35,0.35)",
+    cursor: "pointer",
   },
   poster: {
-    height: 220,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    filter: "saturate(1.05)",
+    width: "100%",
+    borderRadius: 12,
+    objectFit: "cover",
   },
-  body: {
-    display: "flex",
-    flexDirection: "column",
-    padding: "16px 18px 20px",
-    gap: 16,
+  info: {
+    marginTop: 12,
   },
   title: {
     margin: 0,
-    fontSize: "1.05rem",
-    fontWeight: 600,
+    fontSize: "1.1rem",
     color: "#f8fafc",
   },
-  meta: {
-    marginTop: 6,
-    display: "inline-flex",
-    alignItems: "center",
-    padding: "4px 10px",
-    borderRadius: 999,
-    background: "rgba(148,163,184,0.16)",
-    color: "#cbd5f5",
-    fontSize: 13,
-    letterSpacing: "0.04em",
+  year: {
+    margin: 0,
+    fontSize: "0.9rem",
+    color: "#94a3b8",
   },
-  actions: {
+  spacer: {
+    flexGrow: 1,
+  },
+  buttons: {
     display: "flex",
-    flexWrap: "wrap",
-    gap: 12,
+    justifyContent: "space-between",
+    gap: 8,
   },
-  btnPrimary: {
-    flex: "1 1 140px",
-    minWidth: 140,
-    padding: "10px 16px",
-    borderRadius: 12,
+  playButton: {
+    flex: 1,
+    padding: "6px 12px",
+    borderRadius: 8,
     border: "none",
-    background: "linear-gradient(135deg, #f97316 0%, #f43f5e 100%)",
+    cursor: "pointer",
+    backgroundColor: "#2563eb",
     color: "#fff",
     fontWeight: 600,
-    cursor: "pointer",
-    boxShadow: "0 12px 30px rgba(244,63,94,0.35)",
   },
-  btnGhost: {
-    flex: "1 1 140px",
-    minWidth: 140,
-    padding: "10px 16px",
-    borderRadius: 12,
-    border: "1px solid rgba(248,250,252,0.18)",
-    background: "transparent",
-    color: "#e2e8f0",
-    fontWeight: 600,
+  favoriteButton: {
+    flex: 1,
+    padding: "6px 12px",
+    borderRadius: 8,
+    border: "none",
     cursor: "pointer",
-  },
-  btnDanger: {
-    flex: "1 1 140px",
-    minWidth: 140,
-    padding: "10px 16px",
-    borderRadius: 12,
-    border: "1px solid rgba(248,113,113,0.4)",
-    background: "rgba(248,113,113,0.16)",
-    color: "#fca5a5",
+    color: "#fff",
     fontWeight: 600,
-    cursor: "pointer",
   },
 };

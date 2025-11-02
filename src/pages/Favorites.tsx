@@ -12,7 +12,6 @@ export default function FavoritesPage() {
   const posterFallback =
     "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
 
-  // 🔹 Cargar los favoritos desde el backend
   useEffect(() => {
     // Guard flag prevents updating state after the component unmounts.
     let active = true;
@@ -41,12 +40,14 @@ export default function FavoritesPage() {
     };
   }, []);
 
-  // 🔹 Cuando se remueve un favorito
-  function handleRemoved(id: string) {
-    setFavorites((prev) =>
-      prev.filter((f) => f.movieId !== id && f.movie?.id !== id)
-    );
-  }
+  const handleRemoveFavorite = async (movieId: string) => {
+    try {
+      await favSvc.removeFavorite(movieId);
+      setFavorites(prev => prev.filter(f => f.movieId !== movieId));
+    } catch (err) {
+      console.error("Error al remover favorito:", err);
+    }
+  };
 
   if (loading) return <p style={styles.loading}>Cargando favoritos...</p>;
   if (error) return <p style={styles.error}>{error}</p>;
@@ -75,12 +76,11 @@ export default function FavoritesPage() {
                 onPlay={(movie) => setPlaying(movie)}
                 onFavoriteRemoved={handleRemoved}
               />
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
 
-      {/* 🔹 Reproductor de video */}
       {playing && (
         <div style={styles.playerShell}>
           <Player
@@ -125,10 +125,11 @@ const styles: Record<string, CSSProperties> = {
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
     gap: 28,
     justifyItems: "center",
-    alignItems: "start",
+    alignItems: "stretch",
+    width: "100%",
   },
   empty: {
     color: "#94a3b8",
@@ -137,13 +138,20 @@ const styles: Record<string, CSSProperties> = {
   loading: {
     textAlign: "center",
     color: "#94a3b8",
+    fontSize: "1.2rem",
+    marginTop: 40,
   },
   error: {
     color: "#ef4444",
     textAlign: "center",
+    fontSize: "1.2rem",
+    marginTop: 40,
   },
   playerShell: {
     marginTop: 40,
+    display: "flex",
+    justifyContent: "center",
+    width: "100%",
   },
   card: {
     display: "flex",
@@ -234,4 +242,3 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
   },
 };
-

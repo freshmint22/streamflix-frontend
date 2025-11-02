@@ -7,9 +7,6 @@ type PlayerProps = {
   onClose: () => void;
 };
 
-/**
- * Player component renders an overlayed modal video player and persists playback state.
- */
 export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastPositionRef = useRef(0);

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMovies, type Movie } from "../services/movies";
+import favSvc from "../services/favorites";
 import MovieCard from "../components/MovieCard";
 import Player from "../components/Player";
 
@@ -16,8 +17,11 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await getMovies();
-        setMovies(data);
+        const moviesData = await getMovies();
+        setMovies(moviesData);
+
+        const favs = await favSvc.getFavorites();
+        setFavorites(favs.map(f => f.movieId)); // solo IDs
       } catch (e: any) {
         setError(e?.message || "Error cargando las películas");
       } finally {
@@ -25,6 +29,27 @@ export default function Home() {
       }
     })();
   }, []);
+
+  const toggleFavorite = async (movie: any) => {
+    const movieId = movie._id || movie.id;
+    try {
+      if (favorites.includes(movieId)) {
+        await favSvc.removeFavorite(movieId);
+        setFavorites(favorites.filter(id => id !== movieId));
+      } else {
+        await favSvc.addFavorite({
+          movieId,
+          title: movie.title,
+          year: movie.releaseYear || movie.year,
+          posterUrl: movie.thumbnailUrl || movie.posterUrl,
+          videoUrl: movie.videoUrl,
+        });
+        setFavorites([...favorites, movieId]);
+      }
+    } catch (e) {
+      console.error("Error al actualizar favoritos", e);
+    }
+  };
 
   if (loading) return <p style={{ textAlign: "center" }}>Cargando películas...</p>;
   if (error) return <p style={{ color: "#e53935", textAlign: "center" }}>{error}</p>;
@@ -42,6 +67,7 @@ export default function Home() {
         <div style={styles.grid}>
           {movies.map((m) => {
             const mm = m as any;
+            const isFav = favorites.includes(mm._id || mm.id);
             return (
               <div key={mm._id || mm.id} style={styles.cardWrapper}>
                 <MovieCard
@@ -53,6 +79,7 @@ export default function Home() {
                   overview={mm.overview || mm.description}
                   rating={typeof mm.rating === "number" ? mm.rating : mm.voteAverage}
                   onPlay={(payload: any) => setPlayingMovie(payload)}
+                  onToggleFavorite={() => toggleFavorite(mm)}
                 />
               </div>
             );
@@ -77,6 +104,9 @@ export default function Home() {
 
 const styles: Record<string, CSSProperties> = {
   page: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
     maxWidth: 1200,
     margin: "0 auto",
     marginTop: 16,
@@ -90,6 +120,8 @@ const styles: Record<string, CSSProperties> = {
   hero: {
     display: "flex",
     flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center",
     gap: 12,
     marginBottom: 32,
   },
@@ -111,15 +143,26 @@ const styles: Record<string, CSSProperties> = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
     gap: 20,
+    justifyContent: "center",
+    alignItems: "stretch",
+    width: "100%",
+    maxWidth: 1200,
+    margin: "0 auto",
   },
   cardWrapper: {
     display: "flex",
     flexDirection: "column",
-    justifyContent: "stretch",
-    height: "100%", // 🔥 fuerza todas las tarjetas a tener la misma altura visual
+    height: "100%",
   },
   empty: {
     marginTop: 36,
     color: "#94a3b8",
+    textAlign: "center",
+  },
+  playerShell: {
+    marginTop: 40,
+    display: "flex",
+    justifyContent: "center",
+    width: "100%",
   },
 };
