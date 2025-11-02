@@ -8,6 +8,7 @@ export type FavoriteMovie = {
   id: string;
   title: string;
   posterUrl?: string;
+  poster?: string;
   year?: number;
   videoUrl?: string;
   overview?: string;

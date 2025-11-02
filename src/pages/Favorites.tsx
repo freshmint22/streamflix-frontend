@@ -14,19 +14,31 @@ export default function FavoritesPage() {
 
   // 🔹 Cargar los favoritos desde el backend
   useEffect(() => {
+    let active = true;
+
     (async () => {
       try {
         const data = await favSvc.getFavorites();
+        if (!active) return;
+
         console.log("Favoritos cargados:", data);
         setFavorites(Array.isArray(data) ? data : []);
       } catch (err: any) {
+        if (!active) return;
+
         console.error("Error al cargar favoritos:", err);
         setError(err.message || "Error cargando favoritos");
       } finally {
+        if (!active) return;
+
         setLoading(false);
       }
     })();
-  }, [enrichMetadata]);
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // 🔹 Cuando se remueve un favorito
   function handleRemoved(id: string) {
@@ -47,15 +59,17 @@ export default function FavoritesPage() {
       ) : (
         <div style={styles.grid}>
           {favorites.map((fav) => {
-            const m = fav.movie || {};
+            const movie = fav.movie;
+            const movieId = movie?.id ?? fav.movieId;
+            const poster = movie?.posterUrl ?? movie?.poster ?? posterFallback;
             return (
               <MovieCard
-                key={fav._id || fav.movieId}
-                id={m.id || fav.movieId}
-                title={m.title || "Sin título"}
-                year={m.year}
-                poster={m.posterUrl || m.poster || posterFallback}
-                videoUrl={m.videoUrl || ""}
+                key={fav._id || movieId}
+                id={movieId}
+                title={movie?.title || "Sin título"}
+                year={movie?.year}
+                poster={poster}
+                videoUrl={movie?.videoUrl || ""}
                 isFavorited={true}
                 onPlay={(movie) => setPlaying(movie)}
                 onFavoriteRemoved={handleRemoved}
