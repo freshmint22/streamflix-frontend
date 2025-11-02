@@ -14,6 +14,7 @@ export default function FavoritesPage() {
 
   // 🔹 Cargar los favoritos desde el backend
   useEffect(() => {
+    // Guard flag prevents updating state after the component unmounts.
     let active = true;
 
     (async () => {
