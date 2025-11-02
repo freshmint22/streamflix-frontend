@@ -1,16 +1,16 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMovies, type Movie } from "../services/movies";
 import favSvc from "../services/favorites";
 import MovieCard from "../components/MovieCard";
+import Player from "../components/Player";
 
 export default function Home() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [playingMovie, setPlayingMovie] = useState<any | null>(null);
-  const [favorites, setFavorites] = useState<string[]>([]); // IDs de favoritos
-
   const posterFallback = "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
   const navigate = useNavigate();
 
