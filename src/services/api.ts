@@ -1,24 +1,23 @@
 // src/services/api.ts
 
-// Intentar leer la variable de entorno VITE_API_BASE
-// y usar un valor por defecto válido si no existe.
+// Attempt to read the Vite environment variable and fall back when absent.
 const rawBase = import.meta.env.VITE_API_BASE as string | undefined;
 
-// Verificamos que el valor exista y sea válido
+// Ensure the value exists and looks like an HTTP URL
 const base =
   rawBase && /^https?:\/\//.test(rawBase)
     ? rawBase
-    : "http://localhost:5000"; // fallback seguro
+    : "http://localhost:5000"; // safe local fallback
 
-// Eliminamos barras finales duplicadas y agregamos /api
+// Remove duplicate trailing slashes and append /api
 export const API_BASE = `${base.replace(/\/$/, "")}/api`;
 
-// Solo para depuración
+// Useful debug output while developing locally
 if (!rawBase) {
   console.warn(
-    "⚠️ VITE_API_BASE no está definida. Usando fallback:",
+    "⚠️ VITE_API_BASE is not defined. Using fallback:",
     API_BASE,
-    "→ crea un archivo .env.local con VITE_API_BASE=http://tu-backend:puerto"
+    "→ create a .env.local file with VITE_API_BASE=http://your-backend:port"
   );
 } else {
   console.log("✅ Backend URL:", API_BASE);

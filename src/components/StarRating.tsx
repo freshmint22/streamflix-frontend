@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import ratingsSvc from "../services/ratings";
+import ratingsSvc, { type RatingStats } from "../services/ratings";
 
 type StarRatingProps = {
   movieId: string;
@@ -9,37 +9,64 @@ type StarRatingProps = {
 export default function StarRating({ movieId, onRated }: StarRatingProps) {
   const [hover, setHover] = useState(0);
   const [rating, setRating] = useState(0);
-  const [avg, setAvg] = useState(0);
+  const [stats, setStats] = useState<RatingStats>({ average: null, count: 0 });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       try {
-        const r = await ratingsSvc.getRating(movieId);
-        const a = await ratingsSvc.getAverageRating(movieId);
-        if (r) setRating(r.value);
-        setAvg(a);
-      } catch {
-        setAvg(0);
+        setLoading(true);
+        setError(null);
+        const [myRating, stat] = await Promise.all([
+          ratingsSvc.getMyRating(movieId).catch(() => null),
+          ratingsSvc.getRatingStats(movieId),
+        ]);
+        if (!active) return;
+        setStats(stat);
+        if (typeof myRating === "number" && myRating > 0) setRating(myRating);
+        else setRating(0);
+      } catch (err: any) {
+        if (!active) return;
+        setError(err?.message || "Unable to load ratings.");
+        setStats({ average: null, count: 0 });
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     })();
+    return () => {
+      active = false;
+    };
   }, [movieId]);
 
   async function handleRate(value: number) {
+    const previous = rating;
     try {
       setRating(value);
-      await ratingsSvc.setRating(movieId, value);
-      const avg = await ratingsSvc.getAverageRating(movieId);
-      setAvg(avg);
+      setError(null);
+      await ratingsSvc.upsertRating(movieId, value);
+      const updatedStats = await ratingsSvc.getRatingStats(movieId);
+      setStats(updatedStats);
       onRated?.(value);
-    } catch {
-      alert("Error guardando tu calificación");
+    } catch (err: any) {
+  setError(err?.message || "Unable to save your rating.");
+      setRating((prev) => (prev === value ? previous : prev));
     }
   }
 
-  if (loading) return <p style={{ color: "#ccc" }}>Cargando calificación...</p>;
+  async function handleRemove() {
+    try {
+      await ratingsSvc.deleteRating(movieId);
+      setRating(0);
+      const updatedStats = await ratingsSvc.getRatingStats(movieId);
+      setStats(updatedStats);
+    } catch (err: any) {
+      setError(err?.message || "Unable to remove your rating.");
+    }
+  }
+
+  if (loading) return <p style={{ color: "#ccc" }}>Loading rating…</p>;
 
   return (
     <div style={{ textAlign: "center", marginTop: 16 }}>
@@ -55,8 +82,8 @@ export default function StarRating({ movieId, onRated }: StarRatingProps) {
               fontSize: 28,
               color:
                 value <= (hover || rating)
-                  ? "#facc15" // amarillo
-                  : "#475569", // gris
+                  ? "#facc15" // gold
+                  : "#475569", // slate
               transition: "color 0.2s",
             }}
           >
@@ -65,8 +92,30 @@ export default function StarRating({ movieId, onRated }: StarRatingProps) {
         ))}
       </div>
       <p style={{ color: "#94a3b8", marginTop: 8, fontSize: 14 }}>
-        Promedio: <strong>{avg.toFixed(1)}</strong> / 5
+        Average: <strong>{(stats.average ?? 0).toFixed(1)}</strong> / 5 · {stats.count} votes
       </p>
+      {rating > 0 && (
+        <button
+          type="button"
+          onClick={handleRemove}
+          style={{
+            marginTop: 8,
+            background: "transparent",
+            border: "none",
+            color: "#f87171",
+            cursor: "pointer",
+            fontSize: 13,
+            textDecoration: "underline",
+          }}
+        >
+          Remove my rating
+        </button>
+      )}
+      {error && (
+        <p style={{ color: "#f87171", marginTop: 6, fontSize: 13 }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

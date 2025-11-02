@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getMovies } from "../services/movies";
 import { API_BASE } from "../services/api";
+import StarRating from "../components/StarRating";
+import Comments from "../components/Comments";
 
 const posterFallback = "https://via.placeholder.com/400x600/111/fff?text=StreamFlix";
 
@@ -20,41 +22,6 @@ type LocationState = { movie?: TrailerState } | undefined;
 type TrailerMovie = TrailerState & { poster: string };
 
 const starSymbols = { full: "★", empty: "☆" };
-
-type UserReview = {
-  id: string;
-  user: string;
-  rating: number;
-  date: string;
-  comment: string;
-};
-
-const userReviews: UserReview[] = [
-  {
-    id: "rev-1",
-    user: "Camila P.",
-    rating: 8.2,
-    date: "Hace 2 días",
-    comment:
-      "Me encantó la química de los protagonistas y cómo evoluciona la historia. El ritmo es muy dinámico y el final deja con ganas de más.",
-  },
-  {
-    id: "rev-2",
-    user: "Marco L.",
-    rating: 7.6,
-    date: "Hace 5 días",
-    comment:
-      "Visualmente está muy bien lograda y la música acompaña perfecto. Algunas escenas se sienten apresuradas, pero sigue siendo muy disfrutable.",
-  },
-  {
-    id: "rev-3",
-    user: "Renata Q.",
-    rating: 9.0,
-    date: "Hace 1 semana",
-    comment:
-      "Superó mis expectativas. La narrativa profunda y los giros dramáticos mantienen la tensión hasta el final. Recomendadísima.",
-  },
-];
 
 export default function Trailer() {
   const navigate = useNavigate();
@@ -245,26 +212,21 @@ export default function Trailer() {
         </article>
       </div>
 
-      <section style={styles.reviewSection}>
-        <h2 style={styles.sectionTitle}>Opiniones de usuarios</h2>
-        <p style={styles.reviewIntro}>Lo que dice nuestra comunidad sobre este estreno.</p>
-        <div style={styles.reviewGrid}>
-          {userReviews.map((review) => (
-            <article key={review.id} style={styles.reviewCard}>
-              <div style={styles.reviewHeader}>
-                <div style={styles.reviewAvatar}>{review.user.charAt(0)}</div>
-                <div>
-                  <p style={styles.reviewName}>{review.user}</p>
-                  <span style={styles.reviewDate}>{review.date}</span>
-                </div>
-              </div>
-              <div style={styles.reviewStars} aria-label={`Valoración ${review.rating}/10`}>
-                {renderStarsCompact(review.rating)}
-              </div>
-              <p style={styles.reviewRating}>{review.rating.toFixed(1)} / 10</p>
-              <p style={styles.reviewComment}>{review.comment}</p>
-            </article>
-          ))}
+      <section style={styles.communitySection}>
+        <div style={styles.communityGrid}>
+          <article style={styles.communityCard}>
+            <h2 style={styles.sectionTitle}>Califica este título</h2>
+            <p style={styles.communityIntro}>
+              Tu opinión ayuda a otras personas a decidir qué ver. Elige cuántas estrellas merece.
+            </p>
+            <div style={styles.ratingWidget}>
+              <StarRating movieId={movie.id} />
+            </div>
+          </article>
+
+          <article style={styles.communityCard}>
+            <Comments movieId={movie.id} />
+          </article>
         </div>
       </section>
     </section>
@@ -303,12 +265,6 @@ function renderStars(v?: number) {
   const fullStars = Math.min(5, Math.max(0, Math.round(rating / 2)));
   const stars = Array.from({ length: 5 }, (_, i) => (i < fullStars ? starSymbols.full : starSymbols.empty)).join(" ");
   return <div style={styles.starRow} aria-label={`Valoración ${rating}/10`}>{stars}</div>;
-}
-
-function renderStarsCompact(v?: number) {
-  const rating = typeof v === "number" ? v : 0;
-  const fullStars = Math.min(5, Math.max(0, Math.round(rating / 2)));
-  return Array.from({ length: 5 }, (_, i) => (i < fullStars ? starSymbols.full : starSymbols.empty)).join(" ");
 }
 
 const styles: Record<string, CSSProperties> = {
@@ -479,73 +435,35 @@ const styles: Record<string, CSSProperties> = {
     color: "#cbd5f5",
     fontSize: "0.95rem",
   },
-  reviewSection: {
+  communitySection: {
     background: "rgba(8,13,30,0.45)",
     padding: "36px 32px 40px",
     borderRadius: 28,
     border: "1px solid rgba(148,163,184,0.12)",
     boxShadow: "0 30px 90px rgba(4,10,28,0.45)",
   },
-  reviewIntro: {
-    margin: "0 0 24px",
-    color: "#94a3b8",
-  },
-  reviewGrid: {
+  communityGrid: {
     display: "grid",
-    gap: 20,
-    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+    gap: 24,
+    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+    alignItems: "stretch",
   },
-  reviewCard: {
-    background: "rgba(15,23,42,0.75)",
-    borderRadius: 20,
-    border: "1px solid rgba(148,163,184,0.12)",
-    padding: "22px 24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 12,
+  communityCard: {
+    background: "rgba(15,23,42,0.78)",
+    borderRadius: 24,
+    border: "1px solid rgba(148,163,184,0.14)",
+    padding: "24px",
     boxShadow: "0 18px 60px rgba(3,10,28,0.4)",
   },
-  reviewHeader: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-  },
-  reviewAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: "50%",
-    background: "linear-gradient(135deg, #38bdf8, #2563eb)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: 700,
-    color: "#fff",
-    fontSize: "1.1rem",
-  },
-  reviewName: {
-    margin: 0,
-    fontWeight: 600,
-    color: "#f8fafc",
-  },
-  reviewDate: {
-    color: "#94a3b8",
-    fontSize: "0.85rem",
-  },
-  reviewStars: {
-    fontSize: "1.2rem",
-    letterSpacing: "0.25rem",
-    color: "#fbbf24",
-  },
-  reviewRating: {
-    margin: 0,
-    color: "#e2e8f0",
-    fontWeight: 600,
-  },
-  reviewComment: {
-    margin: 0,
+  communityIntro: {
+    margin: "0 0 18px",
     color: "#cbd5f5",
-    lineHeight: 1.55,
-    fontSize: "0.96rem",
+    lineHeight: 1.6,
+  },
+  ratingWidget: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   feedback: {
     textAlign: "center",

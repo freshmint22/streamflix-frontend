@@ -42,6 +42,8 @@ function LayoutWithNav({ children }: { children: React.ReactNode }) {
   const handleLogout = () => {
     localStorage.removeItem("sf_token");
     localStorage.removeItem("sf_username");
+    localStorage.removeItem("sf_email");
+    localStorage.removeItem("sf_userId");
     setLoggedIn(false);
     setUsername(undefined);
     window.location.href = "/";

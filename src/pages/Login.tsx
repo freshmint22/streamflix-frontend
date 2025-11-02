@@ -44,6 +44,12 @@ export default function Login() {
 
       localStorage.setItem("sf_token", token);
       if (username) localStorage.setItem("sf_username", username);
+      if (resp.user?.email || email) {
+        localStorage.setItem("sf_email", resp.user?.email || email);
+      }
+      if (resp.user?._id) {
+        localStorage.setItem("sf_userId", resp.user._id);
+      }
 
       navigate("/home");
     } catch {

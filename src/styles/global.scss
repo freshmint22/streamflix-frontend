@@ -1,16 +1,16 @@
 :root {
-  /* 🎨 Dark futuristic metallic theme */
-  --bg: #0d0b1a;          /* fondo morado oscuro metálico futurista */
-  --panel: #18182a;       /* paneles oscuros */
-  --panel-light: #f5f5f7; /* paneles claros */
-  --text: #eaeaea;        /* texto general claro */
+  --bg: #0d0b1a;
+  --panel: #18182a;
+  --panel-light: #f5f5f7;
+  --text: #eaeaea;
   --muted: #b3b3b3;
   --border: #2b2b2b;
-  --brand: #7a5cff;       /* morado metálico vibrante */
+  --brand: #7a5cff;
 }
 
-/* 🌌 Base */
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -20,7 +20,6 @@ html, body, #root {
   font-family: "Poppins", "Segoe UI", sans-serif;
 }
 
-/* ⚡ Botones morado metálico */
 .btn {
   background: linear-gradient(135deg, #7a5cff, #5d3bff);
   color: #fff;
@@ -32,16 +31,17 @@ html, body, #root {
   box-shadow: 0 0 10px rgba(122, 92, 255, 0.4);
   transition: all 0.3s ease;
 }
+
 .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 14px rgba(122, 92, 255, 0.6);
 }
+
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* 🧩 Inputs */
 .input {
   width: 100%;
   padding: 10px 12px;
@@ -51,29 +51,26 @@ html, body, #root {
   color: var(--text);
 }
 
-/* 💬 Texto del cuadro de registro (más discreto y legible) */
-.texto-registro,
-.texto-cta,
-.texto-principal,
+.text-muted,
+.text-hero,
 .hero p,
 .hero span,
 .cta p,
 .cta span {
-  color: #ffffff !important;      /* blanco puro */
-  font-size: 1rem;                /* tamaño más discreto */
-  font-weight: 500;               /* menos pesado */
+  color: #ffffff !important;
+  font-size: 1rem;
+  font-weight: 500;
   text-align: center;
   text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
   margin-bottom: 0.8rem;
   opacity: 0.95;
 }
 
-/* 🧭 Título "Mapa del Sitio" — negro total, aislado */
 .sitemap-title,
 h1.sitemap-title,
 h1#mapa-del-sitio {
-  color: #000000 !important;   /* negro absoluto */
-  font-weight: 900 !important; /* negrita fuerte */
+  color: #000000 !important;
+  font-weight: 900 !important;
   text-shadow: none !important;
   background: transparent !important;
   font-size: 2rem !important;

@@ -15,8 +15,10 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
   const lastPositionRef = useRef(0);
   const [subtitles, setSubtitles] = useState<{ es: string | null; en: string | null }>({ es: null, en: null });
   const [language, setLanguage] = useState<'es' | 'en' | 'none'>('none'); // default no subtitles
+  const [loadingSubs, setLoadingSubs] = useState(false);
+  const [subtitleError, setSubtitleError] = useState<string | null>(null);
 
-  // Bloquea el scroll del body cuando se abre el player
+  // Lock body scroll while the player modal is open
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -25,7 +27,7 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     };
   }, []);
 
-  // Reinicia el video cuando cambia la URL
+  // Reset the video element whenever the source URL changes
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -39,7 +41,72 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     }
   }, [videoUrl]);
 
-  // Guarda posición del video
+  // Fetch available subtitles every time the movie changes
+  useEffect(() => {
+    let active = true;
+    if (!movieId) {
+      setSubtitles({ es: null, en: null });
+      setLanguage('none');
+      return;
+    }
+
+    (async () => {
+      try {
+        setLoadingSubs(true);
+        setSubtitleError(null);
+        const res = await fetch(`${API_BASE}/subtitles/${movieId}`);
+        if (!res.ok) {
+          throw new Error(`No se encontraron subtítulos (${res.status})`);
+        }
+        const data = await res.json();
+        if (!active) return;
+        const normalized = {
+          es: data?.es ? String(data.es) : null,
+          en: data?.en ? String(data.en) : null,
+        };
+        setSubtitles(normalized);
+        setLanguage((prev) => {
+          if (prev !== 'none') return prev;
+          if (normalized.es) return 'es';
+          if (normalized.en) return 'en';
+          return 'none';
+        });
+      } catch (err: any) {
+        if (!active) return;
+        setSubtitles({ es: null, en: null });
+        setLanguage('none');
+        setSubtitleError(err?.message || 'No pudimos cargar los subtítulos');
+      } finally {
+        if (active) setLoadingSubs(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [movieId]);
+
+  // Sync the selected language with the video text tracks
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const updateTracks = () => {
+      const tracks = Array.from(video.textTracks || []);
+      tracks.forEach((track) => {
+        const lang = track.language?.toLowerCase();
+        track.mode = language !== 'none' && lang === language ? 'showing' : 'disabled';
+      });
+    };
+
+    updateTracks();
+    video.addEventListener('loadedmetadata', updateTracks);
+    return () => {
+      video.removeEventListener('loadedmetadata', updateTracks);
+    };
+  }, [language, subtitles]);
+
+  // Persist a reference to the playback position
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -50,7 +117,7 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     return () => v.removeEventListener("timeupdate", onTime);
   }, []);
 
-  // Cierra con tecla ESC
+  // Close modal when the user hits the ESC key
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") handleClose();
@@ -59,7 +126,7 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  // Notifica al backend progreso de reproducción
+  // Notify the backend about playback progress
   async function postPlayback(path: string, pos = 0) {
     try {
       await fetch(`${API_BASE}/playback/${path}`, {
@@ -113,6 +180,7 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
   }
 
   const handleSubtitleToggle = (lang: 'es' | 'en' | 'none') => {
+    if (lang !== 'none' && !subtitles[lang]) return;
     setLanguage(lang);
   };
 
@@ -145,8 +213,25 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
             style={videoStyles}
             aria-label="Video content"
           >
-            {language !== 'none' && subtitles[language] && (
-              <track kind="subtitles" srcLang={language} label={language === 'es' ? "Español" : "English"} src={subtitles[language]} default />
+            {subtitles.es && (
+              <track
+                key={`es-${movieId}`}
+                kind="subtitles"
+                srcLang="es"
+                label="Español"
+                src={subtitles.es}
+                default={language === 'es'}
+              />
+            )}
+            {subtitles.en && (
+              <track
+                key={`en-${movieId}`}
+                kind="subtitles"
+                srcLang="en"
+                label="English"
+                src={subtitles.en}
+                default={language === 'en'}
+              />
             )}
           </video>
         ) : (
@@ -155,10 +240,22 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
           </div>
         )}
         <div style={subtitleControls}>
-          <button onClick={() => handleSubtitleToggle('none')} disabled={!subtitles.es && !subtitles.en}>Sin Subtítulos</button>
-          <button onClick={() => handleSubtitleToggle('es')} disabled={!subtitles.es}>Subtítulos en Español</button>
-          <button onClick={() => handleSubtitleToggle('en')} disabled={!subtitles.en}>Subtítulos en Inglés</button>
+          <button onClick={() => handleSubtitleToggle('none')} disabled={!subtitles.es && !subtitles.en}>
+            Sin Subtítulos
+          </button>
+          <button onClick={() => handleSubtitleToggle('es')} disabled={!subtitles.es}>
+            Subtítulos en Español
+          </button>
+          <button onClick={() => handleSubtitleToggle('en')} disabled={!subtitles.en}>
+            Subtítulos en Inglés
+          </button>
         </div>
+        {loadingSubs && (
+          <p style={subtitleStatus}>Cargando subtítulos…</p>
+        )}
+        {subtitleError && !loadingSubs && (
+          <p style={{ ...subtitleStatus, color: '#f87171' }}>{subtitleError}</p>
+        )}
       </div>
     </div>
   );
@@ -239,4 +336,10 @@ const subtitleControls: CSSProperties = {
   justifyContent: "space-around",
   width: "100%",
   marginTop: "16px",
+};
+
+const subtitleStatus: CSSProperties = {
+  marginTop: 8,
+  fontSize: 13,
+  color: "#cbd5f5",
 };

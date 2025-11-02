@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const TMDB_API_KEY = process.env.TMDB_API_KEY;
+const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY as string | undefined;
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
 const fallbackMovies: TmdbMovie[] = [
@@ -58,24 +56,27 @@ export const getPopularMovies = async (): Promise<TmdbMovie[]> => {
   }
 
   try {
-    const response = await axios.get(`${TMDB_BASE_URL}/movie/popular`, {
-      params: {
-        api_key: TMDB_API_KEY,
-        language: "es-ES",
-        page: 1,
+    const url = new URL(`${TMDB_BASE_URL}/movie/popular`);
+    url.searchParams.set("api_key", TMDB_API_KEY);
+    url.searchParams.set("language", "es-ES");
+    url.searchParams.set("page", "1");
+
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/json",
       },
     });
-    return response.data?.results ?? [];
-  } catch (error: any) {
-    const status = error?.response?.status;
-    const statusText = error?.response?.statusText;
-    const payload = error?.response?.data;
-    console.error(
-      "Error fetching TMDB movies:",
-      status ? `${status} ${statusText || ""}`.trim() : error?.message || error
-    );
-    if (payload) {
-      console.error("TMDB error payload:", payload);
+    if (!response.ok) {
+      const payload = await response.text();
+      throw new Error(`TMDB request failed: ${response.status} ${response.statusText} ${payload}`.trim());
+    }
+    const data = await response.json();
+    return data?.results ?? [];
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error fetching TMDB movies:", error.message);
+    } else {
+      console.error("Error fetching TMDB movies:", error);
     }
     console.warn("Serving fallback movie dataset due to TMDB failure.");
     return fallbackMovies;

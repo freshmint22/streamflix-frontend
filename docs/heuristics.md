@@ -1,23 +1,16 @@
 # Usability heuristics implemented
 
-This document maps six usability heuristics to concrete places in the project.
+The following table documents how the StreamFlix frontend satisfies Nielsen’s ten usability heuristics. File paths are relative to `src/`.
 
-1. Visibility of system status
-   - Evidence: Loading indicators and messages in `src/pages/Home.tsx`, `src/pages/Login.tsx`, `src/pages/Register.tsx` and `src/pages/Profile.tsx`.
+1. **Visibility of system status** – Loading indicators and inline feedback in `pages/Home.tsx`, `pages/Login.tsx`, `pages/Register.tsx`, `components/StarRating.tsx`, and `components/Comments.tsx` keep users informed about background activity.
+2. **Match between system and the real world** – Copywriting and labels match entertainment vocabulary in `components/Navbar.tsx`, `pages/Landing.tsx`, and `pages/Trailer.tsx`, mirroring how streaming platforms describe content (Play, Trailers, Favorites).
+3. **User control and freedom** – Users can cancel edits or close overlays in `pages/Profile.tsx`, `components/Player.tsx`, and `components/FavoriteButton.tsx`, providing escape hatches from unintended actions.
+4. **Consistency and standards** – Shared layout primitives and typographic variables in `styles/global.scss`, plus reusable cards in `components/MovieCard.tsx`, demonstrate a uniform look and behaviour across views.
+5. **Error prevention** – Validation guards the registration and login forms (`pages/Register.tsx`, `pages/Login.tsx`) while the backend enforces schemas in `../streamflix-backend/src/middleware/validation.ts` to prevent bad data.
+6. **Recognition rather than recall** – The navigation menu (`components/Navbar.tsx`) and footer sitemap (`components/Footer.tsx`) expose main destinations at all times, so users do not need to memorise routes.
+7. **Flexibility and efficiency of use** – Keyboard shortcuts in `components/Navbar.tsx` and persisted profile data in `services/users.ts` speed up frequent tasks for experienced users.
+8. **Aesthetic and minimalist design** – Responsive, content-focused cards in `pages/Home.tsx` and `pages/Trailer.tsx`, together with SASS variables in `styles/global.scss`, minimise clutter while keeping essential actions visible.
+9. **Help users recognise, diagnose, and recover from errors** – Errors are written in plain language (`components/Comments.tsx`, `components/StarRating.tsx`, `pages/ResetPassword.tsx`) and provide guidance to retry.
+10. **Help and documentation** – The in-app Forgot/Reset password flows (`pages/ForgotPassword.tsx`, `pages/ResetPassword.tsx`) offer step-by-step instructions, and the external `docs/user-manual.md` gives detailed walkthroughs.
 
-2. Match between system and the real world
-   - Evidence: Labels and terminology in forms and navigation (e.g. `Navbar.tsx`, `Register.tsx`) match user expectations.
-
-3. User control and freedom
-   - Evidence: Edit forms include Cancel buttons in `src/pages/Profile.tsx` and `Register.tsx` allows navigation to Login.
-
-4. Consistency and standards
-   - Evidence: Routes and components follow consistent naming and structure (`src/routes/AppRoutes.tsx`, `src/components/*`).
-
-5. Error prevention and help
-   - Evidence: Client-side validation in `Register.tsx` and `Login.tsx`; backend validation in controllers and model schemas.
-
-6. Accessibility for keyboard and assistive tech
-   - Evidence: Keyboard handlers in `src/components/Navbar.tsx` (Enter/Escape), ARIA attributes in `Player.tsx` and `Profile.tsx`.
-
-For each of these entries, open the referenced file to see concrete code examples and comments.
+Visit the referenced files to inspect the concrete implementations that support each heuristic.

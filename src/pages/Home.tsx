@@ -50,6 +50,8 @@ export default function Home() {
                   year={mm.releaseYear || mm.year}
                   poster={mm.thumbnailUrl || mm.posterUrl || posterFallback}
                   videoUrl={mm.videoUrl}
+                  overview={mm.overview || mm.description}
+                  rating={typeof mm.rating === "number" ? mm.rating : mm.voteAverage}
                   onPlay={(payload: any) => setPlayingMovie(payload)}
                 />
               </div>

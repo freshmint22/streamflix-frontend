@@ -32,12 +32,29 @@ export default function MovieCard({
   year,
   poster = "",
   videoUrl,
+  overview,
+  rating,
   isFavorited = false,
   onPlay,
   onFavoriteRemoved,
+  onFavoriteAdded,
 }: MovieCardProps) {
   const [fav, setFav] = useState<boolean>(isFavorited);
   const [busy, setBusy] = useState(false);
+
+  const canPlay = Boolean(videoUrl);
+  const playLabel = canPlay ? "Ver trailer" : "Sin video";
+  const posterUrl = poster && poster.startsWith("http") ? poster : "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
+
+  const payload: PlayPayload = {
+    id,
+    title,
+    poster: posterUrl,
+    year,
+    videoUrl,
+    overview,
+    rating,
+  };
 
   async function handleAdd() {
     try {
@@ -45,9 +62,11 @@ export default function MovieCard({
       await favSvc.addFavorite({
         id,
         title,
-        posterUrl: poster,
+        posterUrl,
         year,
         videoUrl,
+        overview,
+        rating,
       });
       setFav(true);
       onFavoriteAdded?.(payload);
@@ -72,23 +91,6 @@ export default function MovieCard({
       setBusy(false);
     }
   }
-
-  const canPlay = Boolean(videoUrl);
-  const playLabel = canPlay ? "Ver trailer" : "Sin video";
-  const posterUrl =
-    poster && poster.startsWith("http")
-      ? poster
-      : "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
-
-  const payload: PlayPayload = {
-    id,
-    title,
-    poster,
-    year,
-    videoUrl,
-    overview,
-    rating,
-  };
 
   return (
     <div style={styles.card}>
@@ -116,19 +118,11 @@ export default function MovieCard({
             {playLabel}
           </button>
           {!fav ? (
-            <button
-              style={styles.btnGhost}
-              onClick={handleAdd}
-              disabled={busy}
-            >
+            <button style={styles.btnGhost} onClick={handleAdd} disabled={busy}>
               Añadir a favoritos
             </button>
           ) : (
-            <button
-              style={styles.btnDanger}
-              onClick={handleRemove}
-              disabled={busy}
-            >
+            <button style={styles.btnDanger} onClick={handleRemove} disabled={busy}>
               Quitar
             </button>
           )}

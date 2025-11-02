@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { API_BASE } from "../services/api";
 
+/**
+ * Page that handles the password reset flow triggered from the email link.
+ */
 export default function ResetPassword() {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -10,24 +12,36 @@ export default function ResetPassword() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (!token) {
-      setMessage("Token inválido o expirado.");
+      setMessage("This reset link is invalid or has expired.");
       return;
     }
     if (!password) {
-      setMessage("Ingresa una nueva contraseña.");
+      setMessage("Please enter a new password.");
       return;
     }
     setSubmitting(true);
     try {
-      await axios.post(`${API_BASE}/password/reset-password/${token}`, { password });
-      setMessage("Contraseña restablecida correctamente. Redirigiendo...");
+      const response = await fetch(`${API_BASE}/password/reset-password/${token}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage || "Password reset failed.");
+      }
+      setMessage("Password updated successfully. Redirecting to login…");
       setTimeout(() => navigate("/login"), 1800);
     } catch (error) {
-      console.error(error);
-      setMessage("Error al restablecer la contraseña");
+      const description = error instanceof Error ? error.message : "Password reset failed.";
+      console.error("Reset password request failed", error);
+      setMessage(description);
     } finally {
       setSubmitting(false);
     }
@@ -35,21 +49,25 @@ export default function ResetPassword() {
 
   return (
     <div style={{ textAlign: "center", marginTop: "100px" }}>
-      <h2>Restablecer contraseña</h2>
+      <h2>Reset your password</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="password"
-          placeholder="Nueva contraseña"
+          placeholder="New password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(event) => setPassword(event.target.value)}
           required
           style={{ padding: "8px", margin: "10px", width: "250px" }}
         />
         <button type="submit" style={{ padding: "8px 16px" }} disabled={submitting}>
-          {submitting ? "Guardando..." : "Cambiar contraseña"}
+          {submitting ? "Saving…" : "Change password"}
         </button>
       </form>
-      {message && <p>{message}</p>}
+      {message && (
+        <p aria-live="assertive" role="status">
+          {message}
+        </p>
+      )}
     </div>
   );
 }

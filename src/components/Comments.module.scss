@@ -1,0 +1,127 @@
+.commentsWrapper {
+  background: rgba(15, 23, 42, 0.85);
+  color: #f1f5f9;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 18px 45px rgba(3, 10, 28, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.commentsHeader {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.errorMessage {
+  color: #fca5a5;
+  font-size: 13px;
+  margin: 0;
+}
+
+.commentList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.emptyState {
+  color: #94a3b8;
+  font-style: italic;
+  margin: 0;
+}
+
+.commentCard {
+  background: rgba(15, 23, 42, 0.65);
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.commentAuthor {
+  margin: 0;
+  font-weight: 600;
+  color: #38bdf8;
+}
+
+.commentBody {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.commentDate {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.commentForm {
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  padding-top: 12px;
+}
+
+.commentInput {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.4);
+  color: #f8fafc;
+}
+
+.commentInput::placeholder {
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.submitButton {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: #0b1120;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.submitButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
+}
+
+.submitButton:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 25px rgba(16, 185, 129, 0.35);
+}
+
+.commentMeta {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+@media (max-width: 640px) {
+  .commentForm {
+    flex-direction: column;
+  }
+
+  .submitButton {
+    width: 100%;
+  }
+}

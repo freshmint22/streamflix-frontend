@@ -69,6 +69,11 @@ export default function Register() {
       const token = (resp as any)?.token as string | undefined;
       if (token) {
         localStorage.setItem("sf_token", token);
+        const profile = (resp as any)?.user || {};
+        const displayName = profile?.firstName || profile?.name || firstName;
+        if (displayName) localStorage.setItem("sf_username", displayName);
+        if (profile?.email || email) localStorage.setItem("sf_email", profile?.email || email);
+        if (profile?._id) localStorage.setItem("sf_userId", profile._id);
         setOk("✅ Cuenta creada. Entrando…");
         // pequeña pausa visual y navegar
         setTimeout(() => navigate("/home"), 600);

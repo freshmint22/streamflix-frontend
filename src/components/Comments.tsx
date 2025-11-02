@@ -1,82 +1,124 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect, type FormEvent } from "react";
+import commentsSvc, { type CommentItem } from "../services/comments";
+import styles from "./Comments.module.scss";
 
-function Comments({ movieId }) {
-  const [comments, setComments] = useState([]);
+type CommentsProps = {
+  movieId: string;
+};
+
+/**
+ * Renders the comment feed for a movie and lets authenticated users post new feedback.
+ */
+export default function Comments({ movieId }: CommentsProps) {
+  const [items, setItems] = useState<CommentItem[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [user, setUser] = useState("Helkin"); // Cambia luego por el usuario logueado
+  const [loadingList, setLoadingList] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // 🔹 Cargar comentarios al montar
+  const displayName =
+    localStorage.getItem("sf_username") ||
+    localStorage.getItem("sf_email") ||
+    "StreamFlix fan";
+
   useEffect(() => {
-    if (movieId) {
-      axios
-        .get(`http://localhost:5000/comentarios/${movieId}`)
-        .then((res) => setComments(res.data))
-        .catch((err) => console.error("Error al cargar comentarios", err));
+    let active = true;
+    if (!movieId) {
+      setItems([]);
+      setLoadingList(false);
+      return;
     }
+
+    (async () => {
+      try {
+        setLoadingList(true);
+        setError(null);
+        const data = await commentsSvc.listComments(movieId);
+        if (active) setItems(data);
+      } catch (err: unknown) {
+        if (active) {
+          const message = err instanceof Error ? err.message : "Unable to load comments.";
+          setError(message);
+        }
+      } finally {
+        if (active) setLoadingList(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
   }, [movieId]);
 
-  // 🔹 Enviar nuevo comentario
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = newComment.trim();
+    if (!trimmed) return;
 
     try {
-      const res = await axios.post("http://localhost:5000/comentarios", {
-        movieId,
-        user,
-        comment: newComment,
-      });
-
-      setComments([...comments, res.data]); // Agrega sin recargar
+      setSubmitting(true);
+      setError(null);
+      const saved = await commentsSvc.createComment(movieId, trimmed);
+      setItems((previous) => [saved, ...previous]);
       setNewComment("");
-    } catch (err) {
-      console.error("Error al enviar comentario", err);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unable to post your comment.";
+      setError(message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  return (
-    <div className="bg-gray-900 text-white p-4 rounded-xl shadow-lg mt-8">
-      <h2 className="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">
-        Comentarios
-      </h2>
+  const isAuthenticated = Boolean(localStorage.getItem("sf_token"));
 
-      <div className="space-y-3 mb-4">
-        {comments.length > 0 ? (
-          comments.map((c) => (
-            <div
-              key={c._id}
-              className="bg-gray-800 p-3 rounded-lg border border-gray-700"
-            >
-              <p className="font-bold text-green-400">{c.user}</p>
-              <p className="text-gray-300">{c.comment}</p>
+  return (
+    <div className={styles.commentsWrapper}>
+      <h2 className={styles.commentsHeader}>Comments</h2>
+
+      {error && (
+        <p className={styles.errorMessage} role="alert" aria-live="assertive">
+          {error}
+        </p>
+      )}
+
+      <div className={styles.commentList}>
+        {loadingList ? (
+          <p className={styles.emptyState}>Loading comments…</p>
+        ) : items.length > 0 ? (
+          items.map((comment) => (
+            <div key={comment._id} className={styles.commentCard}>
+              <p className={styles.commentAuthor}>
+                {comment.userEmail?.split("@")[0] || "StreamFlix user"}
+              </p>
+              <p className={styles.commentBody}>{comment.content}</p>
+              <span className={styles.commentDate}>
+                {new Date(comment.createdAt).toLocaleString()}
+              </span>
             </div>
           ))
         ) : (
-          <p className="text-gray-400 italic">No hay comentarios aún.</p>
+          <p className={styles.emptyState}>Be the first to leave a comment.</p>
         )}
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex items-center gap-2 border-t border-gray-700 pt-3"
-      >
+      <form className={styles.commentForm} onSubmit={handleSubmit}>
         <input
+          className={styles.commentInput}
           type="text"
-          placeholder="Escribe un comentario..."
+          placeholder={isAuthenticated ? "Share your thoughts…" : "Sign in to post"}
           value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          className="flex-grow bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+          onChange={(event) => setNewComment(event.target.value)}
+          disabled={!isAuthenticated || submitting}
+          aria-label="Write a new comment"
         />
-        <button
-          type="submit"
-          className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg"
-        >
-          Enviar
+        <button className={styles.submitButton} type="submit" disabled={!isAuthenticated || submitting}>
+          {submitting ? "Posting…" : "Post"}
         </button>
       </form>
+
+      <p className={styles.commentMeta}>
+        Commenting as <strong>{displayName}</strong>
+      </p>
     </div>
   );
 }
-
-export default Comments;
