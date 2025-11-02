@@ -17,7 +17,9 @@ export default function Login() {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  useEffect(() => { document.title = "StreamFlix – Iniciar sesión"; }, []);
+  useEffect(() => {
+    document.title = "StreamFlix – Iniciar sesión";
+  }, []);
 
   const isValidEmail = (v: string) => /^\S+@\S+\.\S+$/.test(v);
 
@@ -30,8 +32,19 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const { token } = await login({ email, password: pass });
+      const resp: any = await login({ email, password: pass });
+
+      const token = resp.token ?? resp;
+      const username =
+        resp.user?.firstName ||
+        resp.user?.username ||
+        resp.firstName ||
+        resp.username ||
+        "";
+
       localStorage.setItem("sf_token", token);
+      if (username) localStorage.setItem("sf_username", username);
+
       navigate("/home");
     } catch {
       setError("Credenciales inválidas");
@@ -44,17 +57,31 @@ export default function Login() {
     <div style={styles.wrap}>
       <h1>Iniciar sesión</h1>
       <form onSubmit={onSubmit} style={styles.form}>
-        <input className="input" type="email" placeholder="Correo"
-               value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input className="input" type="password" placeholder="Contraseña"
-               value={pass} onChange={(e) => setPass(e.target.value)} />
+        <input
+          className="input"
+          type="email"
+          placeholder="Correo"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          className="input"
+          type="password"
+          placeholder="Contraseña"
+          value={pass}
+          onChange={(e) => setPass(e.target.value)}
+        />
         {error && <p style={styles.error}>{error}</p>}
         <button className="btn" type="submit" disabled={loading || !email || !pass}>
           {loading ? "Entrando..." : "Entrar"}
         </button>
       </form>
-      <p style={{ marginTop: 10 }}><Link to="/forgot">¿Olvidaste tu contraseña?</Link></p>
-      <p style={{ marginTop: 6 }}>¿No tienes cuenta? <Link to="/register">Regístrate</Link></p>
+      <p style={{ marginTop: 10 }}>
+        <Link to="/forgot">¿Olvidaste tu contraseña?</Link>
+      </p>
+      <p style={{ marginTop: 6 }}>
+        ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
+      </p>
     </div>
   );
 }
