@@ -1,0 +1,55 @@
+/* src/pages/Sitemap.scss */
+:root {
+  --panel-dark: #3a1f4a; /* ejemplo morado oscuro */
+  --panel-light: #faf5ff;
+  --text-on-dark: #f7f7fb; /* buen contraste con morado oscuro */
+  --card-bg: rgba(255,255,255,0.04);
+  --link-color: #e9d7ff;
+}
+
+.sf-sitemap {
+  background: var(--panel-dark);
+  color: var(--text-on-dark);
+  padding: 36px;
+  border-radius: 12px;
+  min-height: 60vh;
+
+  &__title {
+    font-size: 2rem;
+    margin-bottom: 1.25rem;
+    text-align: center;
+    color: inherit; /* usa color del contenedor para contrastar */
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    align-items: start;
+  }
+
+  &__card {
+    display: block;
+    padding: 18px;
+    border-radius: 10px;
+    background: var(--card-bg);
+    color: var(--link-color);
+    text-decoration: none;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+    transition: transform .12s ease, box-shadow .12s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+    }
+  }
+
+.sf-sitemap__card[href="/forgot"] {
+  grid-column: 1 / -1;       
+  justify-self: center;      
+  text-align: center;        
+  width: 220px;              
+}
+}

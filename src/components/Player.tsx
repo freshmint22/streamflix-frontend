@@ -16,6 +16,7 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
   const [subtitles, setSubtitles] = useState<{ es: string | null; en: string | null }>({ es: null, en: null });
   const [language, setLanguage] = useState<'es' | 'en' | 'none'>('none'); // default no subtitles
 
+  // Bloquea el scroll del body cuando se abre el player
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -24,6 +25,7 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     };
   }, []);
 
+  // Reinicia el video cuando cambia la URL
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -37,21 +39,7 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     }
   }, [videoUrl]);
 
-  // Fetch subtitles from the backend
-  useEffect(() => {
-    const fetchSubtitles = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/subtitles/${movieId}`);
-        const data = await response.json();
-        setSubtitles(data);
-      } catch (error) {
-        console.error("Error fetching subtitles:", error);
-      }
-    };
-
-    fetchSubtitles();
-  }, [movieId]);
-
+  // Guarda posición del video
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -62,6 +50,7 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     return () => v.removeEventListener("timeupdate", onTime);
   }, []);
 
+  // Cierra con tecla ESC
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") handleClose();
@@ -70,6 +59,7 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
+  // Notifica al backend progreso de reproducción
   async function postPlayback(path: string, pos = 0) {
     try {
       await fetch(`${API_BASE}/playback/${path}`, {
@@ -135,9 +125,15 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
       onClick={handleOverlayClick}
     >
       <div style={containerStyles} onClick={(e) => e.stopPropagation()}>
-        <button onClick={handleClose} aria-label="Cerrar reproductor" style={closeButton} type="button">
+        <button
+          onClick={handleClose}
+          aria-label="Cerrar reproductor"
+          style={closeButton}
+          type="button"
+        >
           ✕
         </button>
+
         {videoUrl ? (
           <video
             key={videoUrl}
@@ -171,36 +167,38 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
 const overlayStyles: CSSProperties = {
   position: "fixed",
   inset: 0,
-  background: "rgba(3,6,20,0.82)",
+  background: "rgba(0,0,0,0.85)",
   backdropFilter: "blur(10px)",
-  display: "grid",
-  placeItems: "center",
-  padding: "clamp(16px, 6vw, 48px)",
-  zIndex: 1000,
-  overflowY: "auto",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "clamp(12px, 4vw, 40px)",
+  zIndex: 9999,
+  animation: "fadeIn 0.25s ease-in-out",
 };
 
 const containerStyles: CSSProperties = {
   position: "relative",
-  width: "min(960px, 88vw)",
-  maxHeight: "90vh",
-  background: "rgba(15,23,42,0.94)",
-  borderRadius: 18,
-  boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
+  width: "min(960px, 90vw)",
+  maxHeight: "85vh",
+  background: "rgba(15,23,42,0.96)",
+  borderRadius: 20,
+  boxShadow: "0 25px 80px rgba(0,0,0,0.6)",
   padding: "28px",
   display: "flex",
   flexDirection: "column",
-  gap: 18,
   alignItems: "center",
-  margin: "auto",
+  justifyContent: "center",
+  overflow: "hidden",
+  animation: "scaleIn 0.3s ease",
 };
 
 const closeButton: CSSProperties = {
   position: "absolute",
-  top: 16,
-  right: 16,
+  top: 14,
+  right: 14,
   border: "none",
-  background: "rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.15)",
   color: "#fff",
   borderRadius: "50%",
   width: 36,
@@ -210,6 +208,7 @@ const closeButton: CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  transition: "background 0.2s ease",
 };
 
 const videoStyles: CSSProperties = {
@@ -218,11 +217,12 @@ const videoStyles: CSSProperties = {
   maxHeight: "70vh",
   borderRadius: 16,
   backgroundColor: "#000",
+  boxShadow: "0 0 20px rgba(0,0,0,0.6)",
 };
 
 const emptyStyles: CSSProperties = {
   width: "100%",
-  minHeight: 240,
+  minHeight: 260,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",

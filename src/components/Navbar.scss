@@ -3,189 +3,120 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: rgba(18,18,18,0.95);
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background: rgba(18, 18, 18, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
-.sf-navbar__brand { font-weight: 700; font-size: 1.05rem; cursor: pointer; flex: 0 1 auto; }
-.sf-navbar__nav { display: flex; gap: 14px; align-items: center; flex: 1 1 auto; justify-content: flex-end; }
-.sf-navbar__nav > a,
-.sf-navbar__nav > .sf-navbar__link {
-  display: none !important; /* hide inline links; navigation via hamburger */
+
+.sf-navbar__brand a {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  text-decoration: none;
 }
-.sf-navbar__profile { display: none !important; }
-.sf-navbar__link { color: var(--text, #fff); text-decoration: none; font-weight: 500; }
-.sf-navbar__link.active { font-weight: 700; }
+
+.sf-navbar__nav {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.sf-navbar__link {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 6px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
 .sf-navbar__profile {
   position: relative;
 
   &-btn {
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.06);
-    color: var(--text, #fff);
-    padding: 6px 10px;
-    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
     cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
   }
 
   &-menu {
     position: absolute;
-    right: 0;
     top: calc(100% + 8px);
-    background: var(--panel, #181818);
-    border: 1px solid rgba(255,255,255,0.06);
+    right: 0;
+    background: #181818;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-    padding: 6px;
-    min-width: 160px;
-    z-index: 40;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     gap: 6px;
+    min-width: 180px;
+    z-index: 50;
   }
 
   &-item {
     background: transparent;
     border: none;
-    color: var(--text, #fff);
-    padding: 8px 10px;
+    color: #fff;
+    padding: 8px 12px;
     text-align: left;
     border-radius: 6px;
     cursor: pointer;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
 
-    &:hover { background: rgba(255,255,255,0.03); }
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
   }
 }
 
-/* Hamburger toggle */
-.sf-navbar__toggle {
-  display: inline-flex; /* always visible */
-  align-items: center;
-  justify-content: center;
-  background: transparent;
+/* --- Unificar tipografía y estilo del botón Cerrar Sesión --- */
+.sf-navbar__logout {
+  background: none;
   border: none;
-  padding: 8px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 1rem;        /* Igual que los links */
+  font-weight: 500;       /* Mismo peso que .sf-navbar__link */
+  line-height: 1.4;
   cursor: pointer;
-  z-index: 220; /* keep the toggle above page elements */
-}
-.sf-navbar__hamburger {
-  display: block;
-  width: 22px;
-  height: 2px;
-  background: #fff; /* middle bar */
-  position: relative;
-  border-radius: 2px;
-}
-.sf-navbar__hamburger::before,
-.sf-navbar__hamburger::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  width: 22px;
-  height: 2px;
-  background: #fff;
-  border-radius: 2px;
-}
-.sf-navbar__hamburger::before { top: -7px; }
-.sf-navbar__hamburger::after { top: 7px; }
-
-/* Mobile overlay menu */
-.sf-navbar__mobile {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end; /* align to right so it drops from hamburger */
-  padding-top: 12px;
-  padding-right: 12px;
-  z-index: 9999; /* ensure overlay sits above all page content (including footer) */
-}
-.sf-navbar__mobile-inner {
-  position: relative;
-  background: var(--panel, #181818);
-  padding: 16px 20px;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 220px;
-  align-items: stretch;
-  margin-right: 8px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-}
-
-/* no explicit mobile close button; overlay closes on backdrop click or Escape */
-
-.sf-navbar__mobile-inner a,
-.sf-navbar__mobile-inner button {
-  font-size: 1rem;
-}
-
-/* make mobile overlay links and buttons full-width, remove browser default blue */
-.sf-navbar__mobile-inner .sf-navbar__link,
-.sf-navbar__mobile-inner a,
-.sf-navbar__mobile-inner button {
-  display: block;
-  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: left;
   text-decoration: none;
-  color: var(--text, #fff) !important;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: transparent;
-  text-align: left;
-  border: none;
-}
-.sf-navbar__mobile-inner .sf-navbar__link + .sf-navbar__link,
-.sf-navbar__mobile-inner a + a { margin-top: 6px; }
+  width: 100%;
+  display: block;         /* Para que ocupe toda la línea igual que los links */
 
-.sf-navbar__mobile-inner .sf-navbar__link:focus,
-.sf-navbar__mobile-inner a:focus,
-.sf-navbar__mobile-inner button:focus {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(30,144,255,0.12);
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
 }
 
-/* ensure anchor states (visited/active) are white in the overlay */
-.sf-navbar__mobile-inner a:link,
-.sf-navbar__mobile-inner a:visited,
-.sf-navbar__mobile-inner a:active,
-.sf-navbar__mobile-inner a:hover {
-  color: var(--text, #fff) !important;
-}
+@media (max-width: 768px) {
+  .sf-navbar__nav {
+    flex-direction: column;
+    gap: 10px;
+  }
 
-.sf-navbar__mobile-section { padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.04); }
-
-/* make mobile overlay links more prominent */
-.sf-navbar__mobile-inner .sf-navbar__link,
-.sf-navbar__mobile-inner a {
-  color: var(--text, #fff);
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: transparent;
-  text-align: left;
-}
-.sf-navbar__mobile-inner .sf-navbar__link:hover,
-.sf-navbar__mobile-inner a:hover { background: rgba(255,255,255,0.03); }
-
-.sf-navbar__mobile-section h3 {
-  margin: 8px 0 6px;
-  font-size: 0.95rem;
-  color: var(--muted, #b3b3b3);
-}
-.sf-navbar__mobile-section { padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.03); }
-
-@media (max-width: 640px) {
-  .sf-navbar { padding: 8px 12px; }
-  .sf-navbar__brand { font-size: 0.95rem; }
-  .sf-navbar__nav { gap: 10px; flex-wrap: wrap; }
-  /* hide inline nav and profile everywhere (use hamburger only) */
-  .sf-navbar__nav > a { display: none; }
-  .sf-navbar__profile { display: none; }
-  .sf-navbar__toggle { display: inline-flex; }
-  .sf-navbar__link { font-size: 0.95rem; }
-  .sf-navbar__logout { padding: 6px 8px; font-size: 0.9rem; }
-
-  /* on small screens keep overlay centered and larger */
-  .sf-navbar__mobile { justify-content: center; padding-top: 80px; padding-right: 0; }
-  .sf-navbar__mobile-inner { min-width: 85%; max-width: 720px; margin-right: 0; border-radius: 12px; }
+  .sf-navbar__logout {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+    width: 100%;
+  }
 }
