@@ -1,236 +1,78 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { getFavorites, removeFavorite, type FavoriteItem, type FavoriteMovie } from "../services/favorites";
-import { getMovies, type Movie } from "../services/movies";
+import { useEffect, useState, type CSSProperties } from "react";
+import favSvc, { FavoriteItem } from "../services/favorites";
+import MovieCard from "../components/MovieCard";
+import Player from "../components/Player";
 
-type PlayState = {
-  id: string;
-  title: string;
-  videoUrl?: string;
-  poster?: string;
-  year?: number;
-  overview?: string;
-  rating?: number;
-};
-
-const posterFallback = "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
-
-export default function Favorites() {
-  const [items, setItems] = useState<FavoriteItem[]>([]);
+export default function FavoritesPage() {
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [removingId, setRemovingId] = useState<string | null>(null);
-  const [highlightId, setHighlightId] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [playing, setPlaying] = useState<any | null>(null);
 
-  const enrichMetadata = useCallback(async (raw: FavoriteItem[]) => {
-    if (!raw.length) return raw;
+  const posterFallback =
+    "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
 
-    const missingIds = raw
-      .filter((fav) => !fav.movie || !fav.movie.title || !fav.movie.posterUrl)
-      .map((fav) => fav.movieId)
-      .filter((id, idx, arr) => arr.indexOf(id) === idx);
-
-    if (missingIds.length === 0) return raw;
-
-    let catalog: Movie[] = [];
-    try {
-      catalog = await getMovies();
-    } catch (catErr) {
-      console.warn("No pudimos obtener el catálogo para enriquecer favoritos", catErr);
-    }
-
-    const mapById = new Map<string, Movie>();
-    catalog.forEach((movie) => {
-      const m: any = movie;
-      const primaryId = m._id || m.id;
-      if (primaryId) {
-        mapById.set(String(primaryId), movie);
-      }
-    });
-
-    return raw.map((fav) => {
-      const movieMeta: FavoriteMovie | undefined = fav.movie;
-      const catalogMovie = mapById.get(String(fav.movieId));
-      const merged = {
-        id: movieMeta?.id || String(fav.movieId),
-        title: movieMeta?.title || (catalogMovie as any)?.title,
-        posterUrl:
-          movieMeta?.posterUrl || (catalogMovie as any)?.posterUrl || (catalogMovie as any)?.thumbnailUrl,
-        year: movieMeta?.year || (catalogMovie as any)?.year || (catalogMovie as any)?.releaseYear,
-        videoUrl: movieMeta?.videoUrl || (catalogMovie as any)?.videoUrl,
-        overview: movieMeta?.overview || (catalogMovie as any)?.overview,
-        rating:
-          typeof movieMeta?.rating === "number"
-            ? movieMeta?.rating
-            : typeof (catalogMovie as any)?.rating === "number"
-              ? (catalogMovie as any)?.rating
-              : undefined,
-      };
-
-      return { ...fav, movie: merged };
-    });
-  }, []);
-
+  // 🔹 Cargar los favoritos desde el backend
   useEffect(() => {
     (async () => {
       try {
-        setLoading(true);
-        const list = await getFavorites();
-        const enriched = await enrichMetadata(list || []);
-        setItems(enriched);
-      } catch (e: any) {
-        setError(e?.message || "No pudimos cargar tus favoritos");
+        const data = await favSvc.getFavorites();
+        console.log("Favoritos cargados:", data);
+        setFavorites(Array.isArray(data) ? data : []);
+      } catch (err: any) {
+        console.error("Error al cargar favoritos:", err);
+        setError(err.message || "Error cargando favoritos");
       } finally {
         setLoading(false);
       }
     })();
   }, [enrichMetadata]);
 
-  useEffect(() => {
-    const state = (location.state as { highlightId?: string } | null) || null;
-    if (state?.highlightId) {
-      setHighlightId(state.highlightId);
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state, location.pathname, navigate]);
-
-  useEffect(() => {
-    if (!highlightId) return;
-    const element = document.getElementById(`favorite-${highlightId}`);
-    element?.scrollIntoView({ behavior: "smooth", block: "center" });
-    const timer = window.setTimeout(() => setHighlightId(null), 4000);
-    return () => window.clearTimeout(timer);
-  }, [highlightId, items.length]);
-
-  const handlePlay = (payload: PlayState) => {
-    navigate(`/trailer/${payload.id}`, { state: { movie: payload } });
-  };
-
-  const handleRemove = async (favoriteKey: string, movieId: string) => {
-    try {
-      setRemovingId(favoriteKey);
-      await removeFavorite(favoriteKey);
-      setItems((prev) => prev.filter((fav) => fav._id !== favoriteKey && fav.movieId !== movieId));
-    } catch (e) {
-      console.error("Remove favorite error", e);
-      alert("No pudimos quitar este favorito, intenta nuevamente.");
-    } finally {
-      setRemovingId(null);
-    }
-  };
-
-  if (loading) {
-    return <div style={styles.feedback}>Cargando tus favoritos...</div>;
-  }
-
-  if (error) {
-    return (
-      <div style={styles.error} role="alert">
-        {error}
-      </div>
+  // 🔹 Cuando se remueve un favorito
+  function handleRemoved(id: string) {
+    setFavorites((prev) =>
+      prev.filter((f) => f.movieId !== id && f.movie?.id !== id)
     );
   }
 
+  if (loading) return <p style={styles.loading}>Cargando favoritos...</p>;
+  if (error) return <p style={styles.error}>{error}</p>;
+
   return (
     <div style={styles.page}>
-      <header style={styles.header}>
-        <h1 style={styles.title}>Tus favoritos</h1>
-        <p style={styles.subtitle}>Encuentra rápidamente los títulos que guardaste y retoma sus avances cuando quieras.</p>
-      </header>
+      <h1 style={styles.title}>Tus Favoritos ❤️</h1>
 
-      {highlightId && items.some((fav) => fav.movie?.id === highlightId || fav.movieId === highlightId) && (
-        <div style={styles.banner}>¡Listo! Tu película se agregó a favoritos.</div>
-      )}
-
-      {items.length === 0 ? (
-        <div style={styles.emptyCard}>
-          <h2>No tienes favoritos guardados</h2>
-          <p>Explora el catálogo y toca “Añadir a favoritos” en cualquier película que te guste.</p>
-        </div>
+      {favorites.length === 0 ? (
+        <p style={styles.empty}>No has agregado ninguna película a favoritos.</p>
       ) : (
         <div style={styles.grid}>
-          {items.map((fav) => {
-            const movieId = fav.movie?.id || fav.movieId;
-            const favoriteKey = fav._id || movieId;
-            const movieMeta = fav.movie;
-            const poster = movieMeta?.posterUrl || posterFallback;
-            const title = movieMeta?.title || "Sin título";
-            const canPlay = Boolean(movieMeta?.videoUrl);
-            const releaseYear = movieMeta?.year;
-            const ratingValue = typeof movieMeta?.rating === "number" ? movieMeta.rating : undefined;
-            const payload: PlayState = {
-              id: movieId,
-              title,
-              videoUrl: movieMeta?.videoUrl,
-              poster,
-              year: releaseYear,
-              overview: movieMeta?.overview,
-              rating: ratingValue,
-            };
-
+          {favorites.map((fav) => {
+            const m = fav.movie || {};
             return (
-              <article
-                key={favoriteKey}
-                id={`favorite-${movieId}`}
-                style={{
-                  ...styles.card,
-                  ...(highlightId === movieId ? styles.cardHighlight : {}),
-                }}
-              >
-                <button
-                  type="button"
-                  style={styles.posterButton}
-                  onClick={() => canPlay && handlePlay(payload)}
-                  aria-label={`Ver trailer de ${title}`}
-                >
-                  <img
-                    src={poster}
-                    alt={`Póster de ${title}`}
-                    style={styles.posterImg}
-                    onError={(evt) => {
-                      const img = evt.currentTarget as HTMLImageElement;
-                      if (img.src !== posterFallback) img.src = posterFallback;
-                      img.onerror = null;
-                    }}
-                  />
-                </button>
-
-                <div style={styles.cardBody}>
-                  <div>
-                    <h3 style={styles.cardTitle}>{title}</h3>
-                    <div style={styles.cardMeta}>
-                      {releaseYear && <span>{releaseYear}</span>}
-                      {typeof ratingValue === "number" && <span>★ {ratingValue.toFixed(1)}</span>}
-                    </div>
-                    {movieMeta?.overview && <p style={styles.cardOverview}>{movieMeta.overview}</p>}
-                  </div>
-
-                  <div style={styles.cardActions}>
-                    <button
-                      style={{
-                        ...styles.btnPrimary,
-                        opacity: canPlay ? 1 : 0.6,
-                        cursor: canPlay ? "pointer" : "not-allowed",
-                      }}
-                      onClick={() => canPlay && handlePlay(payload)}
-                      disabled={!canPlay}
-                    >
-                      Ver trailer
-                    </button>
-                    <button
-                      style={styles.btnGhost}
-                      onClick={() => handleRemove(favoriteKey, movieId)}
-                      disabled={removingId === favoriteKey}
-                    >
-                      {removingId === favoriteKey ? "Quitando..." : "Quitar"}
-                    </button>
-                  </div>
-                </div>
-              </article>
+              <MovieCard
+                key={fav._id || fav.movieId}
+                id={m.id || fav.movieId}
+                title={m.title || "Sin título"}
+                year={m.year}
+                poster={m.posterUrl || m.poster || posterFallback}
+                videoUrl={m.videoUrl || ""}
+                isFavorited={true}
+                onPlay={(movie) => setPlaying(movie)}
+                onFavoriteRemoved={handleRemoved}
+              />
             );
           })}
+        </div>
+      )}
+
+      {/* 🔹 Reproductor de video */}
+      {playing && (
+        <div style={styles.playerShell}>
+          <Player
+            movieId={playing.id}
+            videoUrl={playing.videoUrl}
+            onClose={() => setPlaying(null)}
+          />
         </div>
       )}
     </div>
@@ -241,29 +83,20 @@ const styles: Record<string, CSSProperties> = {
   page: {
     maxWidth: 1200,
     margin: "0 auto",
-    padding: "48px 32px 96px",
-    borderRadius: 28,
-    background: "linear-gradient(150deg, rgba(13,23,42,0.95), rgba(24,29,55,0.9))",
-    boxShadow: "0 40px 110px rgba(6,12,30,0.55)",
+    padding: "48px 40px 100px",
+    background:
+      "linear-gradient(140deg, rgba(14,23,44,0.96), rgba(24,31,56,0.88))",
     color: "#e2e8f0",
-    backdropFilter: "blur(10px)",
-  },
-  header: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-    marginBottom: 28,
+    borderRadius: 32,
+    boxShadow: "0 45px 120px rgba(5,11,26,0.55)",
+    minHeight: "100vh",
   },
   title: {
-    margin: 0,
-    fontSize: "2.5rem",
+    fontSize: "2rem",
     fontWeight: 700,
+    marginBottom: 32,
     color: "#f8fafc",
-  },
-  subtitle: {
-    margin: 0,
-    maxWidth: 680,
-    color: "#94a3b8",
+    textAlign: "center",
   },
   banner: {
     marginBottom: 28,
@@ -277,28 +110,25 @@ const styles: Record<string, CSSProperties> = {
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-    gap: 24,
+    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+    gap: 28,
+    justifyItems: "center",
+    alignItems: "start",
   },
-  feedback: {
+  empty: {
+    color: "#94a3b8",
     textAlign: "center",
-    padding: "80px 20px",
+  },
+  loading: {
+    textAlign: "center",
     color: "#94a3b8",
   },
   error: {
+    color: "#ef4444",
     textAlign: "center",
-    padding: "80px 20px",
-    color: "#fda4af",
-    fontWeight: 600,
   },
-  emptyCard: {
+  playerShell: {
     marginTop: 40,
-    padding: "48px 32px",
-    borderRadius: 24,
-    background: "rgba(15,23,42,0.55)",
-    border: "1px solid rgba(148,163,184,0.12)",
-    textAlign: "center",
-    color: "#cbd5f5",
   },
   card: {
     display: "flex",
@@ -389,3 +219,4 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
   },
 };
+
