@@ -23,6 +23,16 @@ export default function MovieCard({
 }: MovieCardProps) {
   const [hovered, setHovered] = useState(false);
 
+  const payload: PlayPayload = {
+    id,
+    title,
+    poster,
+    year,
+    videoUrl,
+    overview,
+    rating,
+  };
+
   return (
     <div
       style={{

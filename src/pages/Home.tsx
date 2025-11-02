@@ -1,8 +1,8 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { useNavigate } from "react-router-dom";
 import { getMovies, type Movie } from "../services/movies";
 import favSvc from "../services/favorites";
 import MovieCard from "../components/MovieCard";
-import Player from "../components/Player";
 
 export default function Home() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -12,6 +12,7 @@ export default function Home() {
   const [favorites, setFavorites] = useState<string[]>([]); // IDs de favoritos
 
   const posterFallback = "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {

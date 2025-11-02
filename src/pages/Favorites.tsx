@@ -32,7 +32,7 @@ export default function FavoritesPage() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [enrichMetadata]);
 
   const handleRemoveFavorite = async (movieId: string) => {
     try {
@@ -103,6 +103,16 @@ const styles: Record<string, CSSProperties> = {
     color: "#f8fafc",
     textAlign: "center",
   },
+  banner: {
+    marginBottom: 28,
+    padding: "14px 18px",
+    borderRadius: 16,
+    background: "linear-gradient(90deg, rgba(249,115,22,0.18), rgba(244,63,94,0.18))",
+    color: "#f8fafc",
+    fontWeight: 600,
+    letterSpacing: "0.01em",
+    boxShadow: "0 18px 40px rgba(244,63,94,0.18)",
+  },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
@@ -132,5 +142,93 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     justifyContent: "center",
     width: "100%",
+  },
+  card: {
+    display: "flex",
+    flexDirection: "column",
+    padding: 22,
+    borderRadius: 24,
+    background: "rgba(15,23,42,0.72)",
+    border: "1px solid rgba(148,163,184,0.14)",
+    boxShadow: "0 30px 70px rgba(8,15,35,0.45)",
+    gap: 18,
+    transition: "transform 0.24s ease, box-shadow 0.24s ease",
+  },
+  cardHighlight: {
+    boxShadow: "0 0 0 3px rgba(249,115,22,0.75), 0 38px 90px rgba(249,115,22,0.28)",
+    transform: "translateY(-6px)",
+  },
+  posterButton: {
+    border: "none",
+    padding: 0,
+    background: "transparent",
+    cursor: "pointer",
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+  posterImg: {
+    width: "100%",
+    aspectRatio: "2 / 3",
+    objectFit: "cover",
+    borderRadius: 20,
+    boxShadow: "0 24px 60px rgba(8,15,35,0.45)",
+    transition: "transform 0.24s ease",
+  },
+  cardBody: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+    color: "#e2e8f0",
+  },
+  cardTitle: {
+    margin: 0,
+    fontSize: "1.25rem",
+    fontWeight: 600,
+    color: "#f8fafc",
+  },
+  cardMeta: {
+    display: "flex",
+    gap: 12,
+    marginTop: 8,
+    color: "#cbd5f5",
+    fontSize: 13,
+    textTransform: "uppercase",
+    letterSpacing: "0.12em",
+  },
+  cardOverview: {
+    marginTop: 14,
+    marginBottom: 0,
+    color: "#94a3b8",
+    fontSize: "0.95rem",
+    lineHeight: 1.6,
+  },
+  cardActions: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  btnPrimary: {
+    flex: "1 1 140px",
+    minWidth: 140,
+    padding: "11px 18px",
+    borderRadius: 14,
+    border: "none",
+    background: "linear-gradient(135deg, #f97316 0%, #f43f5e 100%)",
+    color: "#fff",
+    fontWeight: 600,
+    cursor: "pointer",
+    boxShadow: "0 16px 40px rgba(244,63,94,0.38)",
+    transition: "transform 0.2s ease",
+  },
+  btnGhost: {
+    flex: "1 1 120px",
+    minWidth: 120,
+    padding: "11px 18px",
+    borderRadius: 14,
+    border: "1px solid rgba(248,250,252,0.22)",
+    background: "rgba(15,23,42,0.55)",
+    color: "#e2e8f0",
+    fontWeight: 600,
+    cursor: "pointer",
   },
 };

@@ -1,22 +1,35 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE } from "../services/api";
 
 export default function ResetPassword() {
   const { token } = useParams();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!token) {
+      setMessage("Token inválido o expirado.");
+      return;
+    }
+    if (!password) {
+      setMessage("Ingresa una nueva contraseña.");
+      return;
+    }
+    setSubmitting(true);
     try {
-      await axios.post("http://localhost:5000/auth/reset-password", { token, password });
-      setMessage("Contraseña restablecida correctamente");
-      setTimeout(() => navigate("/login"), 2000);
+      await axios.post(`${API_BASE}/password/reset-password/${token}`, { password });
+      setMessage("Contraseña restablecida correctamente. Redirigiendo...");
+      setTimeout(() => navigate("/login"), 1800);
     } catch (error) {
       console.error(error);
       setMessage("Error al restablecer la contraseña");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -32,7 +45,9 @@ export default function ResetPassword() {
           required
           style={{ padding: "8px", margin: "10px", width: "250px" }}
         />
-        <button type="submit" style={{ padding: "8px 16px" }}>Cambiar contraseña</button>
+        <button type="submit" style={{ padding: "8px 16px" }} disabled={submitting}>
+          {submitting ? "Guardando..." : "Cambiar contraseña"}
+        </button>
       </form>
       {message && <p>{message}</p>}
     </div>
