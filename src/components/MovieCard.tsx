@@ -1,84 +1,27 @@
-import { useState } from "react";
-import type { CSSProperties } from "react";
-import favSvc from "../services/favorites";
-
-type PlayPayload = {
-  id: string;
-  title: string;
-  poster: string;
-  year?: number;
-  videoUrl?: string;
-  overview?: string;
-  rating?: number;
-};
+import React, { useState } from "react";
 
 type MovieCardProps = {
   id: string;
   title: string;
   year?: number;
-  poster?: string;
+  poster: string;
   videoUrl?: string;
-  overview?: string;
-  rating?: number;
-  isFavorited?: boolean;
-  onPlay?: (payload: PlayPayload) => void;
-  onFavoriteRemoved?: (movieId: string) => void;
-  onFavoriteAdded?: (payload: PlayPayload) => void;
+  onPlay: (payload: any) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 };
 
 export default function MovieCard({
   id,
   title,
   year,
-  poster = "",
+  poster,
   videoUrl,
-  isFavorited = false,
   onPlay,
-  onFavoriteRemoved,
+  isFavorite = false,
+  onToggleFavorite,
 }: MovieCardProps) {
-  const [fav, setFav] = useState<boolean>(isFavorited);
-  const [busy, setBusy] = useState(false);
-
-  async function handleAdd() {
-    try {
-      setBusy(true);
-      await favSvc.addFavorite({
-        id,
-        title,
-        posterUrl: poster,
-        year,
-        videoUrl,
-      });
-      setFav(true);
-      onFavoriteAdded?.(payload);
-    } catch (e) {
-      console.error("Add favorite error", e);
-      alert("Failed to add favorite");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleRemove() {
-    try {
-      setBusy(true);
-      await favSvc.removeFavorite(id);
-      setFav(false);
-      onFavoriteRemoved?.(id);
-    } catch (e) {
-      console.error("Remove favorite error", e);
-      alert("Failed to remove favorite");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const canPlay = Boolean(videoUrl);
-  const playLabel = canPlay ? "Ver trailer" : "Sin video";
-  const posterUrl =
-    poster && poster.startsWith("http")
-      ? poster
-      : "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
+  const [hovered, setHovered] = useState(false);
 
   const payload: PlayPayload = {
     id,
@@ -91,130 +34,111 @@ export default function MovieCard({
   };
 
   return (
-    <div style={styles.card}>
-      <div
-        style={{
-          ...styles.poster,
-          backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0) 45%, rgba(15,23,42,0.92) 100%), url(${posterUrl})`,
-        }}
-      />
-      <div style={styles.body}>
-        <div>
-          <h3 style={styles.title}>{title}</h3>
-          <span style={styles.meta}>{year || "—"}</span>
-        </div>
-        <div style={styles.actions}>
-          <button
-            style={{
-              ...styles.btnPrimary,
-              opacity: canPlay ? 1 : 0.55,
-              cursor: canPlay ? "pointer" : "not-allowed",
-            }}
-            onClick={() => canPlay && onPlay && onPlay(payload)}
-            disabled={!canPlay}
-          >
-            {playLabel}
-          </button>
-          {!fav ? (
-            <button
-              style={styles.btnGhost}
-              onClick={handleAdd}
-              disabled={busy}
-            >
-              Añadir a favoritos
-            </button>
-          ) : (
-            <button
-              style={styles.btnDanger}
-              onClick={handleRemove}
-              disabled={busy}
-            >
-              Quitar
-            </button>
-          )}
-        </div>
+    <div
+      style={{
+        ...cardStyles.container,
+        transform: hovered ? "translateY(-4px)" : "translateY(0)",
+        boxShadow: hovered
+          ? "0 12px 24px rgba(0,0,0,0.3)"
+          : "0 4px 12px rgba(0,0,0,0.2)",
+        transition: "all 0.2s ease-in-out",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <img src={poster} alt={title} style={cardStyles.poster} />
+      <div style={cardStyles.info}>
+        <h3 style={cardStyles.title}>{title}</h3>
+        {year && <p style={cardStyles.year}>{year}</p>}
+      </div>
+      <div style={cardStyles.spacer} />
+      <div style={cardStyles.buttons}>
+        <button
+          style={{
+            ...cardStyles.playButton,
+            transition: "background-color 0.2s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1e40af")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#2563eb")}
+          onClick={() => onPlay({ id, videoUrl })}
+        >
+          Reproducir
+        </button>
+        <button
+          style={{
+            ...cardStyles.favoriteButton,
+            backgroundColor: isFavorite ? "#ef4444" : "#f97316",
+            transition: "background-color 0.2s",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = isFavorite ? "#dc2626" : "#fb923c")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = isFavorite ? "#ef4444" : "#f97316")
+          }
+          onClick={onToggleFavorite}
+        >
+          {isFavorite ? "Favorito" : "Agregar"}
+        </button>
       </div>
     </div>
   );
 }
 
-const styles: Record<string, CSSProperties> = {
-  card: {
+const cardStyles: Record<string, React.CSSProperties> = {
+  container: {
     display: "flex",
     flexDirection: "column",
-    borderRadius: 24,
+    height: "100%",
+    backgroundColor: "#1e293b",
+    borderRadius: 16,
+    padding: 12,
     overflow: "hidden",
-    background:
-      "linear-gradient(180deg, rgba(15,23,42,0.92), rgba(30,41,59,0.92))",
-    border: "1px solid rgba(148,163,184,0.08)",
-    boxShadow: "0 22px 45px rgba(8,15,35,0.35)",
+    cursor: "pointer",
   },
   poster: {
-    height: 220,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    filter: "saturate(1.05)",
+    width: "100%",
+    borderRadius: 12,
+    objectFit: "cover",
   },
-  body: {
-    display: "flex",
-    flexDirection: "column",
-    padding: "16px 18px 20px",
-    gap: 16,
+  info: {
+    marginTop: 12,
   },
   title: {
     margin: 0,
-    fontSize: "1.05rem",
-    fontWeight: 600,
+    fontSize: "1.1rem",
     color: "#f8fafc",
   },
-  meta: {
-    marginTop: 6,
-    display: "inline-flex",
-    alignItems: "center",
-    padding: "4px 10px",
-    borderRadius: 999,
-    background: "rgba(148,163,184,0.16)",
-    color: "#cbd5f5",
-    fontSize: 13,
-    letterSpacing: "0.04em",
+  year: {
+    margin: 0,
+    fontSize: "0.9rem",
+    color: "#94a3b8",
   },
-  actions: {
+  spacer: {
+    flexGrow: 1,
+  },
+  buttons: {
     display: "flex",
-    flexWrap: "wrap",
-    gap: 12,
+    justifyContent: "space-between",
+    gap: 8,
   },
-  btnPrimary: {
-    flex: "1 1 140px",
-    minWidth: 140,
-    padding: "10px 16px",
-    borderRadius: 12,
+  playButton: {
+    flex: 1,
+    padding: "6px 12px",
+    borderRadius: 8,
     border: "none",
-    background: "linear-gradient(135deg, #f97316 0%, #f43f5e 100%)",
+    cursor: "pointer",
+    backgroundColor: "#2563eb",
     color: "#fff",
     fontWeight: 600,
-    cursor: "pointer",
-    boxShadow: "0 12px 30px rgba(244,63,94,0.35)",
   },
-  btnGhost: {
-    flex: "1 1 140px",
-    minWidth: 140,
-    padding: "10px 16px",
-    borderRadius: 12,
-    border: "1px solid rgba(248,250,252,0.18)",
-    background: "transparent",
-    color: "#e2e8f0",
-    fontWeight: 600,
+  favoriteButton: {
+    flex: 1,
+    padding: "6px 12px",
+    borderRadius: 8,
+    border: "none",
     cursor: "pointer",
-  },
-  btnDanger: {
-    flex: "1 1 140px",
-    minWidth: 140,
-    padding: "10px 16px",
-    borderRadius: 12,
-    border: "1px solid rgba(248,113,113,0.4)",
-    background: "rgba(248,113,113,0.16)",
-    color: "#fca5a5",
+    color: "#fff",
     fontWeight: 600,
-    cursor: "pointer",
   },
 };
