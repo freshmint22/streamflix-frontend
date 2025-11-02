@@ -1,14 +1,14 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { useNavigate } from "react-router-dom";
 import { getMovies, type Movie } from "../services/movies";
 import MovieCard from "../components/MovieCard";
-import Player from "../components/Player";
 
 export default function Home() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [playingMovie, setPlayingMovie] = useState<any | null>(null);
   const posterFallback = "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -116,8 +116,5 @@ const styles: Record<string, CSSProperties> = {
   empty: {
     marginTop: 36,
     color: "#94a3b8",
-  },
-  playerShell: {
-    marginTop: 40,
   },
 };

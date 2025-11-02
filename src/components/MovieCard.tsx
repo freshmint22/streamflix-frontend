@@ -2,7 +2,15 @@ import { useState } from "react";
 import type { CSSProperties } from "react";
 import favSvc from "../services/favorites";
 
-type PlayPayload = { id: string; title: string; videoUrl?: string };
+type PlayPayload = {
+  id: string;
+  title: string;
+  poster: string;
+  year?: number;
+  videoUrl?: string;
+  overview?: string;
+  rating?: number;
+};
 
 type MovieCardProps = {
   id: string;
@@ -10,9 +18,12 @@ type MovieCardProps = {
   year?: number;
   poster?: string;
   videoUrl?: string;
+  overview?: string;
+  rating?: number;
   isFavorited?: boolean;
   onPlay?: (payload: PlayPayload) => void;
   onFavoriteRemoved?: (movieId: string) => void;
+  onFavoriteAdded?: (payload: PlayPayload) => void;
 };
 
 export default function MovieCard({
@@ -39,6 +50,7 @@ export default function MovieCard({
         videoUrl,
       });
       setFav(true);
+      onFavoriteAdded?.(payload);
     } catch (e) {
       console.error("Add favorite error", e);
       alert("Failed to add favorite");
@@ -68,6 +80,16 @@ export default function MovieCard({
       ? poster
       : "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
 
+  const payload: PlayPayload = {
+    id,
+    title,
+    poster,
+    year,
+    videoUrl,
+    overview,
+    rating,
+  };
+
   return (
     <div style={styles.card}>
       <div
@@ -88,7 +110,7 @@ export default function MovieCard({
               opacity: canPlay ? 1 : 0.55,
               cursor: canPlay ? "pointer" : "not-allowed",
             }}
-            onClick={() => canPlay && onPlay && onPlay({ id, title, videoUrl })}
+            onClick={() => canPlay && onPlay && onPlay(payload)}
             disabled={!canPlay}
           >
             {playLabel}
