@@ -7,14 +7,10 @@ type PlayerProps = {
   onClose: () => void;
 };
 
-/**
- * Player component renders an overlayed modal video player and persists playback state.
- */
 export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastPositionRef = useRef(0);
 
-  // Bloquea el scroll del body cuando se abre el player
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -23,7 +19,6 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     };
   }, []);
 
-  // Reinicia el video cuando cambia la URL
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -37,7 +32,6 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     }
   }, [videoUrl]);
 
-  // Guarda posición del video
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -48,7 +42,6 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     return () => v.removeEventListener("timeupdate", onTime);
   }, []);
 
-  // Cierra con tecla ESC
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") handleClose();
@@ -57,7 +50,6 @@ export default function Player({ videoUrl, movieId, onClose }: PlayerProps) {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  // Notifica al backend progreso de reproducción
   async function postPlayback(path: string, pos = 0) {
     try {
       await fetch(`${API_BASE}/playback/${path}`, {
@@ -218,3 +210,4 @@ const emptyStyles: CSSProperties = {
   textAlign: "center",
   padding: "32px",
 };
+

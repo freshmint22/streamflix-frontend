@@ -12,13 +12,19 @@ export default function FavoritesPage() {
   const posterFallback =
     "https://via.placeholder.com/240x360/111/fff?text=StreamFlix";
 
-  // 🔹 Cargar los favoritos desde el backend
   useEffect(() => {
     (async () => {
       try {
         const data = await favSvc.getFavorites();
-        console.log("Favoritos cargados:", data);
-        setFavorites(Array.isArray(data) ? data : []);
+        // Mapeo para asegurar que cada favorito tenga todos los datos
+        const mapped = data.map(f => ({
+          movieId: f.movieId,
+          title: f.title || f.movie?.title || "Sin título",
+          year: f.year || f.movie?.year,
+          posterUrl: f.posterUrl || f.movie?.posterUrl || posterFallback,
+          videoUrl: f.videoUrl || f.movie?.videoUrl,
+        }));
+        setFavorites(mapped);
       } catch (err: any) {
         console.error("Error al cargar favoritos:", err);
         setError(err.message || "Error cargando favoritos");
@@ -28,12 +34,14 @@ export default function FavoritesPage() {
     })();
   }, []);
 
-  // 🔹 Cuando se remueve un favorito
-  function handleRemoved(id: string) {
-    setFavorites((prev) =>
-      prev.filter((f) => f.movieId !== id && f.movie?.id !== id)
-    );
-  }
+  const handleRemoveFavorite = async (movieId: string) => {
+    try {
+      await favSvc.removeFavorite(movieId);
+      setFavorites(prev => prev.filter(f => f.movieId !== movieId));
+    } catch (err) {
+      console.error("Error al remover favorito:", err);
+    }
+  };
 
   if (loading) return <p style={styles.loading}>Cargando favoritos...</p>;
   if (error) return <p style={styles.error}>{error}</p>;
@@ -46,26 +54,23 @@ export default function FavoritesPage() {
         <p style={styles.empty}>No has agregado ninguna película a favoritos.</p>
       ) : (
         <div style={styles.grid}>
-          {favorites.map((fav) => {
-            const m = fav.movie || {};
-            return (
+          {favorites.map(fav => (
+            <div key={fav.movieId} style={{ width: "100%" }}>
               <MovieCard
-                key={fav._id || fav.movieId}
-                id={m.id || fav.movieId}
-                title={m.title || "Sin título"}
-                year={m.year}
-                poster={m.posterUrl || m.poster || posterFallback}
-                videoUrl={m.videoUrl || ""}
-                isFavorited={true}
-                onPlay={(movie) => setPlaying(movie)}
-                onFavoriteRemoved={handleRemoved}
+                id={fav.movieId}
+                title={fav.title}
+                year={fav.year}
+                poster={fav.posterUrl}
+                videoUrl={fav.videoUrl}
+                isFavorite={true}
+                onPlay={m => setPlaying(m)}
+                onToggleFavorite={() => handleRemoveFavorite(fav.movieId)}
               />
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
 
-      {/* 🔹 Reproductor de video */}
       {playing && (
         <div style={styles.playerShell}>
           <Player
@@ -100,10 +105,11 @@ const styles: Record<string, CSSProperties> = {
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
     gap: 28,
     justifyItems: "center",
-    alignItems: "start",
+    alignItems: "stretch",
+    width: "100%",
   },
   empty: {
     color: "#94a3b8",
@@ -112,13 +118,19 @@ const styles: Record<string, CSSProperties> = {
   loading: {
     textAlign: "center",
     color: "#94a3b8",
+    fontSize: "1.2rem",
+    marginTop: 40,
   },
   error: {
     color: "#ef4444",
     textAlign: "center",
+    fontSize: "1.2rem",
+    marginTop: 40,
   },
   playerShell: {
     marginTop: 40,
+    display: "flex",
+    justifyContent: "center",
+    width: "100%",
   },
 };
-
