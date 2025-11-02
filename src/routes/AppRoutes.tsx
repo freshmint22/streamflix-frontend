@@ -14,8 +14,6 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ResetPassword from "../pages/ResetPassword";
 
-import ResetPassword from "../pages/ResetPassword";
-
 
 function LayoutWithNav({ children }: { children: React.ReactNode }) {
   return (
